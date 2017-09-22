@@ -1,0 +1,5 @@
+{
+    "groupid" : 1234,
+    "awtenantcode" : "apikey",
+    "host" : "host.domain.tld"
+}
