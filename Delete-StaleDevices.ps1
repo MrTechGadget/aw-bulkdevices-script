@@ -178,12 +178,14 @@ Function Set-DeviceIdList {
     foreach ($device in $Devices) {
         if ($device.EnrollmentStatus -eq "EnterpriseWipePending") {
             $entwipe += $device.Id.Value
+        } elseif ($device.EnrollmentStatus -eq "Unenrolled") {
+            $entwipe += $device.Id.Value
         } else {
-            Write-Verbose "$($device.SerialNumber) is not pending Enterprise Wipe, skipping"
+            Write-Verbose "$($device.SerialNumber) is not pending Enterprise Wipe or unenrolled, skipping"
             $t++
         }
     }
-    Write-Host "Skipped $t devices that are not pending enterprise wipe."
+    Write-Host "Skipped $t devices that are not pending enterprise wipe or unenrolled."
     return $entwipe
 }
 
@@ -246,7 +248,7 @@ Function Set-DaysPrior {
             } # end try
         catch {$numOK = $false}
         } # end do 
-    until (($days -ge 1 -and $days -lt 200) -and $numOK)
+    until (($days -ge 15 -and $days -lt 200) -and $numOK)
     return 0-$days
 }
 

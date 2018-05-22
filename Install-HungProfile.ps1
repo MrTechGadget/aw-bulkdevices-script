@@ -54,20 +54,21 @@ Function Get-BasicUserForAuth {
     Return "Basic " + $EncodedUsernamePassword
 }
 
-Function Read-Serials {
-    if (Test-Path "Serials.csv") {
-        Write-Verbose "Serials.csv exists, importing list."
-        $data = Import-Csv -Path Serials.csv
+Function Read-File {
+    Param([string]$file, [string]$head)
+    if (Test-Path $file) {
+        Write-Verbose "$file exists, importing list."
+        $data = Import-Csv -Path $file
         $s = @()
         foreach ($device in $data) {
-            $s += $device.SerialNumber
-            Write-Verbose $device.SerialNumber
+            $s += $device.$head
+            Write-Verbose $device.$head
         }
         return $s
     } else {
-        Write-Verbose "Serials.csv does not exist."
+        Write-Verbose "$file does not exist."
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-        Write-Host "      No Serials.csv file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
+        Write-Host "      No $file file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
     }
     
@@ -95,15 +96,18 @@ Function Build-Headers {
 }
 
 Function Get-Profiles {
-    Param([string]$GroupID)
+    Param([string]$GroupID, [string]$platform)
     $endpointURL = "https://${airwatchServer}/api/mdm/profiles/search?organizationgroupid=${GroupID}"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
     $Array = New-Object System.Collections.Hashtable
     foreach ($profile in $webReturn.Profiles) {
-        $Array.Add($profile.ProfileName, $profile.Id.Value)
+        if ($profile.Platform -eq $platform) {
+            $Array.Add($profile.ProfileName, $profile.Id.Value)
+        }
     }
     return $Array
 }
+
 
 Function Get-OrgGroups {
     $endpointURL = "https://${airwatchServer}/api/system/groups/search?orderby=name"
@@ -113,6 +117,22 @@ Function Get-OrgGroups {
         $OrgArray.Add($org.Name, $org.Id.Value)
     }
     return $OrgArray
+}
+
+Function Select-Platform {
+    $platforms = @("Apple","Android","WindowsPc","AppleOsX","AppleTV","ChromeOS")
+    $selection = $null
+    $i=0
+    foreach($platform in $platforms)
+    {
+        Write-Host -ForegroundColor Cyan "  $($i+1)." $platform
+        $TagArr += $platform
+        $i++
+    }
+    Write-Host # empty line
+    $ans = (Read-Host 'Please enter selection') -as [int]
+    $selection = $ans-1
+    return $platforms[$selection]
 }
 
 Function Select-Tag {
@@ -258,6 +278,12 @@ Function Check-Devices {
                     $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
                     Write-Host $devid  "  install queued   " + $webReturn2
+                } elseif ($r.Status -eq 0) {
+                    $devid = $webReturn.DeviceId.Id.Value
+                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$profile/install"
+                    $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
+                    $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
+                    Write-Host $devid  "  install queued   " + $webReturn2
                 } elseif ($r.Status -eq 3) {
                     Write-Host $webReturn.DeviceId.Id.Value profile already installed.
                 } elseif ($r.Status -eq 6) {
@@ -279,7 +305,7 @@ Start of Script
 #>
 
 <# Set configurations #>
-$devicelist = Read-Serials
+$devicelist = Read-File "Serials.csv" "SerialNumber"
 $restUserName = Get-BasicUserForAuth
 $Config = Read-Config
 $tenantAPIKey = $Config.awtenantcode
@@ -291,22 +317,9 @@ $useJSON = "application/json"
 $headers = Build-Headers $restUserName $tenantAPIKey $useJSON $useJSON
 $OrgGroups = Get-OrgGroups
 $GroupID = Select-Tag $OrgGroups
-$ProfileList = Get-Profiles $GroupID[1]
+$Platform = Select-Platform
+$ProfileList = Get-Profiles $GroupID[1] $Platform
 $ProfileSelected = Select-Tag $ProfileList
 
 $results = Check-Devices $devicelist $ProfileSelected[1]
 
-
-
-#$DeviceList = Set-DeviceIdList $Devices
-#$DeviceJSON = Set-AddTagJSON $DeviceList
-#$DeviceDetails = Get-DeviceDetails $DeviceJSON
-#$DeviceDetails | Export-Csv -Path "DevicesLastSeen${LastSeenDate}.csv"
-<# Start API calls 
-
-$Devices = Get-Device $SelectedTag
-$DeviceJSON = Set-AddTagJSON $Devices
-$DeviceDetails = Get-DeviceDetails $DeviceJSON
-$DeviceDetails | Export-Csv -Path "${TagName}.csv"
-Write-Host "All Devices with ${TagName} saved to ${TagName}.csv"
-#>

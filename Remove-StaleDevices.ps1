@@ -238,11 +238,11 @@ Function Set-DaysPrior {
     do {
         try {
             $numOk = $true
-            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen"
+            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen (between 15 and 150)"
             } # end try
         catch {$numOK = $false}
         } # end do 
-    until (($days -ge 1 -and $days -lt 100) -and $numOK)
+    until (($days -ge 15 -and $days -lt 151) -and $numOK)
     return 0-$days
 }
 
