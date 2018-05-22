@@ -12,16 +12,18 @@
 .PARAMETER <Parameter_Name>
     <Brief description of parameter input required. Repeat this attribute if required>
 .INPUTS
-  AirWatchConfig.Config
+  AirWatchConfig.json
 .OUTPUTS
-  Outputs a CSV file with Devices that have the selected tag.
+  None
 .NOTES
   Version:        1.0
   Author:         Joshua Clark @audioeng
-  Creation Date:  09/06/2017
+  Creation Date:  05/22/2018
   
 .EXAMPLE
-  Get-ListOfStaleDevices.ps1
+    $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
+    Set-Location $ScriptPath 
+    Import-Module .\PSairwatch.psm1
 #>
 
 
@@ -111,6 +113,46 @@ Function Get-Tags {
     return $TagArray
 }
 
+Function Get-Profiles {
+    Param([string]$GroupID, [string]$platform)
+    $endpointURL = "https://${airwatchServer}/api/mdm/profiles/search?organizationgroupid=${GroupID}"
+    $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
+    $Array = New-Object System.Collections.Hashtable
+    foreach ($profile in $webReturn.Profiles) {
+        if ($profile.Platform -eq $platform) {
+            $Array.Add($profile.ProfileName, $profile.Id.Value)
+        }
+        
+    }
+    return $Array
+}
+
+Function Get-OrgGroups {
+    $endpointURL = "https://${airwatchServer}/api/system/groups/search?orderby=name"
+    $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
+    $OrgArray = New-Object System.Collections.Hashtable
+    foreach ($org in $webReturn.LocationGroups) {
+        $OrgArray.Add($org.Name, $org.Id.Value)
+    }
+    return $OrgArray
+}
+
+Function Select-Platform {
+    $platforms = @("Apple","Android","WindowsPc","AppleOsX","AppleTV","ChromeOS")
+    $selection = $null
+    $i=0
+    foreach($platform in $platforms)
+    {
+        Write-Host -ForegroundColor Cyan "  $($i+1)." $platform
+        $TagArr += $platform
+        $i++
+    }
+    Write-Host # empty line
+    $ans = (Read-Host 'Please enter selection') -as [int]
+    $selection = $ans-1
+    return $platforms[$selection]
+}
+
 Function Select-Tag {
     Param([object]$TagList)
 
@@ -181,6 +223,38 @@ Function Set-AddTagJSON {
     Return $addTagJSON
 }
 
+Function Set-DeviceIdJSON {
+    
+    Param([Array]$deviceList,[string]$idType)
+    
+    Write-Verbose("------------------------------")
+    Write-Verbose("Building JSON to Post")
+    
+    $arrayLength = $deviceList.Count
+    $counter = 0
+    $quoteCharacter = [char]34
+
+    $addJSON = "{ "
+    foreach ($currentDeviceID in $deviceList) {
+        $deviceIDString = Out-String -InputObject $currentDeviceID
+        $deviceIDString = $deviceIDString.Trim()
+    
+        $counter = $counter + 1
+        if ($counter -lt $arrayLength) {
+            $addJSON = $addJSON + $quoteCharacter + $idType + $quoteCharacter + " : " + $deviceIDString + ", "
+        } else {
+            $addJSON = $addJSON + $quoteCharacter + $idType + $quoteCharacter + " : " + $deviceIDString
+        }
+    }
+    $addJSON = $addJSON + " }"
+    
+    Write-Verbose($addJSON)
+    Write-Verbose("------------------------------")
+    Write-Verbose("")
+        
+    Return $addJSON
+}
+
 Function Get-DeviceDetails {
     Param([string]$addTagJSON)
     try {
@@ -229,11 +303,24 @@ Function Set-DeviceIdListSupervision {
     return $s
 }
 
+Function Install-PublicApp { 
+    Param([string]$addJSON,[string]$appId)
+    try {
+        $endpointURL = "https://${airwatchServer}/api/mam/apps/public/$appId/install"
+        $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addJSON
+       
+        return $webReturn
+    }
+    catch {
+        Write-Host "Error retrieving device details. May not be any devices with that device id."
+    }
+
+}
+
 Function Remove-Device-EnterpriseWipe { # Enterprise Wipes List of devices by device id
     Param([string]$body)
     try {
-        $endpointURL = "https://${airwatchServer}/api/mdm/devices/commands/bulk?command=enterprisewipe&searchby=deviceid
-"
+        $endpointURL = "https://${airwatchServer}/api/mdm/devices/commands/bulk?command=enterprisewipe&searchby=deviceid"
         $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $body
        
         return $webReturn
@@ -270,11 +357,11 @@ Function Set-DaysPrior {
     do {
         try {
             $numOk = $true
-            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen"
+            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and 200"
             } # end try
         catch {$numOK = $false}
         } # end do 
-    until (($days -ge 15 -and $days -lt 200) -and $numOK)
+    until (($days -ge 15 -and $days -lt 201) -and $numOK)
     return 0-$days
 }
 
@@ -324,4 +411,4 @@ Function Check-Devices {
         }
     }
 }
-Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Build-Headers, Get-Tags, Select-Tag, Get-Device, Set-AddTagJSON, Get-DeviceDetails, Remove-Device-EnterpriseWipe, Remove-Device-FullWipe, Set-DaysPrior, Set-LastSeenDate, Check-Devices
+Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Build-Headers, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Remove-Device-EnterpriseWipe, Remove-Device-FullWipe, Set-DaysPrior, Set-LastSeenDate, Check-Devices
