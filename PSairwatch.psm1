@@ -17,7 +17,8 @@
   None
 .NOTES
   Version:        1.0
-  Author:         Joshua Clark @audioeng
+  Author:         Joshua Clark @MrTechGadget, @audioeng
+  Source:         https://github.com/audioeng/aw-bulkdevices-script
   Creation Date:  05/22/2018
   
 .EXAMPLE
@@ -317,7 +318,7 @@ Function Install-PublicApp {
 
 }
 
-Function Remove-Device-EnterpriseWipe { # Enterprise Wipes List of devices by device id
+Function Remove-Devices-EnterpriseWipe { # Enterprise Wipes List of devices by device id
     Param([string]$body)
     try {
         $endpointURL = "https://${airwatchServer}/api/mdm/devices/commands/bulk?command=enterprisewipe&searchby=deviceid"
@@ -329,6 +330,28 @@ Function Remove-Device-EnterpriseWipe { # Enterprise Wipes List of devices by de
         Write-Host "Error retrieving device details. May not be any devices with that device id."
     }
 
+}
+
+Function Remove-Device-EnterpriseWipe { # Enterprise Wipes List of devices by device id
+    Param([array]$devices)
+    $body = ""
+    $arr = @()
+    foreach ($deviceid in $devices) {
+        try {
+            $endpointURL = "https://${airwatchServer}/api/mdm/devices/${deviceid}/commands?command=EnterpriseWipe"
+            $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $body
+            if ($webReturn) {
+                $arr += $webReturn
+            }
+        }
+    catch {
+        $e = [int]$Error[0].Exception.Response.StatusCode
+        Write-Host "Error wiping device $deviceid. Status code $e. May not be any devices with that device id."
+        return $e
+    }
+    }
+
+    return $arr
 }
 
 Function Remove-Device-FullWipe { # Enterprise Wipes List of devices by device id
@@ -357,7 +380,7 @@ Function Set-DaysPrior {
     do {
         try {
             $numOk = $true
-            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and 200"
+            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and 200)"
             } # end try
         catch {$numOK = $false}
         } # end do 
@@ -382,7 +405,7 @@ Function Check-Devices {
             $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=$deviceid"
             $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers 
             if ($webReturn) {
-                $r = $webReturn.DeviceProfiles | where { $_.Id.Value -eq $profile}
+                $r = $webReturn.DeviceProfiles | Where-Object { $_.Id.Value -eq $profile}
                 if ($r.Status -eq 1) {
                     $devid = $webReturn.DeviceId.Id.Value
                     $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$profile/install"
