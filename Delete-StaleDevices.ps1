@@ -12,14 +12,18 @@
   Outputs a CSV file with Devices that have not been seen in X number of days that have been deleted.
 .NOTES
   Version:        1.1
-  Author:         Joshua Clark @audioeng
+  Author:         Joshua Clark @MrTechGadget
   Creation Date:  09/15/2017
-  Site:           https://github.com/audioeng/aw-bulkdevices-script
+  Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
-  Get-ListOfStaleDevices.ps1
+  Get-ListOfStaleDevices.ps1 -pageSize 1000
 #>
 
-
+[CmdletBinding()] 
+Param(
+   [Parameter(HelpMessage="Number of devices returned, default is 500")]
+   [string]$pageSize = "500"
+)
 
 Function Read-Config {
     try {
@@ -115,12 +119,12 @@ Function Select-Tag {
 }
 
 Function Get-Device {
-    Param([string]$lastseen, [string]$lgid)
+    Param([string]$lastseen, [string]$lgid, [string]$pageSize)
 
 
-    $endpointURL = "https://${airwatchServer}/api/mdm/devices/search?lastseen=${lastseen}&lgid=${lgid}&orderby=lastseen&sortorder=DESC"
+    $endpointURL = "https://${airwatchServer}/api/mdm/devices/search?lastseen=${lastseen}&lgid=${lgid}&orderby=lastseen&sortorder=DESC&pagesize=${pageSize}"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
-    Write-Host "Total of $($webReturn.Total) devices match search, returning the first 500 results."
+    Write-Host "Total of $($webReturn.Total) devices match search, returning the first ${pageSize} results."
     return $webReturn.Devices
 }
 
@@ -281,7 +285,7 @@ $LastSeenDate = Set-LastSeenDate $DaysPrior
 Write-Host("------------------------------")
 Write-Host("")
 Write-Host "Devices last seen on or before " + $LastSeenDate 
-$Devices = Get-Device $LastSeenDate $GroupID
+$Devices = Get-Device $LastSeenDate $GroupID $pageSize
 $DeviceList = Set-DeviceIdList $Devices
 $DeviceJSON = Set-AddTagJSON $DeviceList
 $DeviceDetails = Get-DeviceDetails $DeviceJSON

@@ -16,9 +16,9 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        1.0
-  Author:         Joshua Clark @MrTechGadget, @audioeng
-  Source:         https://github.com/audioeng/aw-bulkdevices-script
+  Version:        2.0
+  Author:         Joshua Clark @MrTechGadget
+  Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
   
 .EXAMPLE
@@ -70,10 +70,19 @@ Function Read-File {
         Write-Verbose "$file exists, importing list."
         $data = Import-Csv -Path $file
         $s = @()
-        foreach ($device in $data) {
-            $s += $device.$head
-            Write-Verbose $device.$head
+        if ($data.$head) {
+            foreach ($device in $data) {
+                try {
+                    $s += $device.$head
+                    Write-Verbose -Message "$device.$head"
+                } catch {
+                    Write-Error -Message "Failed to add $device to list."
+                }
+            }
+        } else {
+            Write-Error -Message "No such column, $head, in CSV file $file."
         }
+
         return $s
     } else {
         Write-Verbose "$file does not exist."
@@ -83,7 +92,7 @@ Function Read-File {
     }   
 }
 
-Function Build-Headers {
+Function Set-Header {
 
     Param([string]$authoriztionString, [string]$tenantCode, [string]$acceptType, [string]$contentType)
 
@@ -99,7 +108,7 @@ Function Build-Headers {
     Write-Verbose("Content-Type: " + $content)
     Write-Verbose("------------------------------")
     Write-Verbose("")
-    $header = @{"Authorization" = $authString; "aw-tenant-code" = $tcode; "Accept" = $useJSON; "Content-Type" = $useJSON}
+    $header = @{"Authorization" = $authString; "aw-tenant-code" = $tcode; "Accept" = $accept; "Content-Type" = $content}
      
     Return $header
 }
@@ -145,7 +154,6 @@ Function Select-Platform {
     foreach($platform in $platforms)
     {
         Write-Host -ForegroundColor Cyan "  $($i+1)." $platform
-        $TagArr += $platform
         $i++
     }
     Write-Host # empty line
@@ -194,25 +202,25 @@ Function Get-Device {
 <#  This function builds the JSON to add the tag to all of the devices. #>
 Function Set-AddTagJSON {
 
-    Param([Array]$deviceList)
+    Param([Array]$items)
     
     Write-Verbose("------------------------------")
     Write-Verbose("Building JSON to Post")
     
-    $arrayLength = $deviceList.Count
+    $arrayLength = $items.Count
     $counter = 0
     $quoteCharacter = [char]34
 
     $addTagJSON = "{ " + $quoteCharacter + "BulkValues" + $quoteCharacter + " : { " + $quoteCharacter + "Value" + $quoteCharacter + " : [ "
-    foreach ($currentDeviceID in $deviceList) {
-        $deviceIDString = Out-String -InputObject $currentDeviceID
-        $deviceIDString = $deviceIDString.Trim()
+    foreach ($item in $items) {
+        $itemString = Out-String -InputObject $item
+        $itemString = $itemString.Trim()
     
         $counter = $counter + 1
         if ($counter -lt $arrayLength) {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $deviceIDString + $quoteCharacter + ", "
+            $addTagJSON = $addTagJSON + $quoteCharacter + $itemString + $quoteCharacter + ", "
         } else {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $deviceIDString + $quoteCharacter
+            $addTagJSON = $addTagJSON + $quoteCharacter + $itemString + $quoteCharacter
         }
     }
     $addTagJSON = $addTagJSON + " ] } }"
@@ -270,6 +278,28 @@ Function Get-DeviceDetails {
 
 }
 
+Function Send-Post {
+    Param(
+        [Parameter(Mandatory=$True,HelpMessage="Rest Endpoint for POST, after https://airwatchServer/api/")]
+        [string]$endpoint,
+        [Parameter(Mandatory=$True,HelpMessage="Body to be sent")]
+        [string]$body,
+        [Parameter(HelpMessage="Version of API")]
+        [string]$version = $version1
+        )
+    $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
+    try {
+        $endpointURL = "https://${airwatchServer}/api/${endpoint}"
+        $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $body
+       
+        return $webReturn
+    }
+    catch {
+        Write-Host "Error submitting POST."
+    }
+
+}
+
 Function Set-DeviceIdList {
     Param([object]$Devices)
     $s = @()
@@ -307,7 +337,7 @@ Function Set-DeviceIdListSupervision {
 Function Install-PublicApp { 
     Param([string]$addJSON,[string]$appId)
     try {
-        $endpointURL = "https://${airwatchServer}/api/mam/apps/public/$appId/install"
+        $endpointURL = "https://${airwatchServer}/api/mam/apps/public/${appId}/install"
         $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addJSON
        
         return $webReturn
@@ -318,7 +348,7 @@ Function Install-PublicApp {
 
 }
 
-Function Remove-Devices-EnterpriseWipe { # Enterprise Wipes List of devices by device id
+Function Remove-DevicesEnterpriseWipe { # Enterprise Wipes List of devices by device id
     Param([string]$body)
     try {
         $endpointURL = "https://${airwatchServer}/api/mdm/devices/commands/bulk?command=enterprisewipe&searchby=deviceid"
@@ -332,7 +362,7 @@ Function Remove-Devices-EnterpriseWipe { # Enterprise Wipes List of devices by d
 
 }
 
-Function Remove-Device-EnterpriseWipe { # Enterprise Wipes List of devices by device id
+Function Remove-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by device id
     Param([array]$devices)
     $body = ""
     $arr = @()
@@ -354,7 +384,7 @@ Function Remove-Device-EnterpriseWipe { # Enterprise Wipes List of devices by de
     return $arr
 }
 
-Function Remove-Device-FullWipe { # Enterprise Wipes List of devices by device id
+Function Remove-DeviceFullWipe { # Enterprise Wipes List of devices by device id
     Param([array]$devices)
     $body = ""
     $arr = @()
@@ -396,13 +426,13 @@ Function Set-LastSeenDate {
     return $ls
 }
 
-Function Check-Devices {
+Function Update-Devices {
     Param([array]$devices, $profile)
     $body = ""
     $quoteCharacter = [char]34
     foreach ($deviceid in $devices) {
         try {
-            $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=$deviceid"
+            $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
             $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers 
             if ($webReturn) {
                 $r = $webReturn.DeviceProfiles | Where-Object { $_.Id.Value -eq $profile}
@@ -434,4 +464,51 @@ Function Check-Devices {
         }
     }
 }
-Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Build-Headers, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Remove-Device-EnterpriseWipe, Remove-Device-FullWipe, Set-DaysPrior, Set-LastSeenDate, Check-Devices
+
+Function Split-Array {
+ <#  
+  .SYNOPSIS   
+    Split an array
+  .NOTES
+    Version : July 2, 2017 - implemented suggestions from ShadowSHarmon for performance   
+  .PARAMETER inArray
+   A one dimensional array you want to split
+  .EXAMPLE  
+   Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -parts 3
+  .EXAMPLE  
+   Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -size 3
+ #> 
+
+  param($inArray,[int]$parts,[int]$size)
+  
+  if ($parts) {
+    $PartSize = [Math]::Ceiling($inArray.count / $parts)
+  } 
+  if ($size) {
+    $PartSize = $size
+    $parts = [Math]::Ceiling($inArray.count / $size)
+  }
+
+  $outArray = New-Object 'System.Collections.Generic.List[psobject]'
+
+  for ($i=1; $i -le $parts; $i++) {
+    $start = (($i-1)*$PartSize)
+    $end = (($i)*$PartSize) - 1
+    if ($end -ge $inArray.count) {$end = $inArray.count -1}
+	$outArray.Add(@($inArray[$start..$end]))
+  }
+  return ,$outArray
+
+}
+
+<# Set configurations #>
+$restUserName = Get-BasicUserForAuth
+$Config = Read-Config
+$tenantAPIKey = $Config.awtenantcode
+$organizationGroupID = $Config.groupid
+$airwatchServer = $Config.host
+$version1 = "application/json;version=1"
+$version2 = "application/json;version=2"
+
+
+Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Remove-DeviceEnterpriseWipe, Remove-DeviceFullWipe, Set-DaysPrior, Set-LastSeenDate, Update-Devices, Split-Array, Send-Post
