@@ -16,6 +16,7 @@ The supervised devices are then issued full wipes and the unsupervised devices a
 The user then enters a number of days(X) since the devices have been last seen.
 All of the devices in that organization group (and child org groups) that have not been seen since X days and are pending enterprise wipe are deleted are exported to a CSV file named with that date.
 
+**To-Do** - List all the new functions that have been added!
 
 These PowerShell scripts are PowerShell Core (PS 6) compliant and were written with Visual Studio Code on a Mac. 
 
