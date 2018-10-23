@@ -16,6 +16,10 @@ The supervised devices are then issued full wipes and the unsupervised devices a
 The user then enters a number of days(X) since the devices have been last seen.
 All of the devices in that organization group (and child org groups) that have not been seen since X days and are pending enterprise wipe are deleted are exported to a CSV file named with that date.
 
+**Delete-User.ps1** - This script deletes users in AirWatch from a CSV list. The file is required, the column name is optional. If not provided, it will use the default column name of "Id".
+  .\Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
+It deletes in batches of 50 users per call. I have found that most calls with more than 70 or so users will fail. It has been tested to successfully delete over 16,000 users at a time. This takes a while of course as this is 320 batches.
+
 **To-Do** - List all the new functions that have been added!
 
 These PowerShell scripts are PowerShell Core (PS 6) compliant and were written with Visual Studio Code on a Mac. 
