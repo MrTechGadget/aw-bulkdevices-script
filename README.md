@@ -14,7 +14,10 @@ The supervised devices are then issued full wipes and the unsupervised devices a
 
 **Delete-StaleDevices.ps1** - This script displays a list of all Organization groups in an environment, allowing the user to select an organization group. 
 The user then enters a number of days(X) since the devices have been last seen.
-All of the devices in that organization group (and child org groups) that have not been seen since X days and are pending enterprise wipe are deleted are exported to a CSV file named with that date.
+All of the devices returned in the first "page" in that organization group (and child org groups) that have not been seen since X days and are pending enterprise wipe are deleted are exported to a CSV file named with that date. You can set an optional pageSize parameter to process more or less devices than the default of 500 devices.
+
+EXAMPLE
+  Get-ListOfStaleDevices.ps1 -pageSize 1000
 
 **Delete-User.ps1** - This script deletes users in AirWatch from a CSV list. The file is required, the column name is optional. If not provided, it will use the default column name of "Id".
   .\Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
@@ -29,7 +32,7 @@ EXAMPLE
 
 The user is prompted to confirm before it is executed.
 
-**To-Do** - List all the new functions that have been added!
+## Compatibility
 
 These PowerShell scripts are PowerShell Core (PS 6) compliant and were written with Visual Studio Code on a Mac. 
 
