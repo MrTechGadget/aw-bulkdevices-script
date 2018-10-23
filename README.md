@@ -20,6 +20,15 @@ All of the devices in that organization group (and child org groups) that have n
   .\Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
 It deletes in batches of 50 users per call. I have found that most calls with more than 70 or so users will fail. It has been tested to successfully delete over 16,000 users at a time. This takes a while of course as this is 320 batches.
 
+**Reset-FullDevice.ps1** - This script executes a full device wipe for a CSV list of serial numbers. 
+file parameter is the path to a CSV file with a list of Serial Numbers.  This is required.  
+fileColumn parameter is the Column title in CSV file containing SerialNumber values.  This is optional, with a default value of "SerialNumber". 
+
+EXAMPLE
+  .\Reset-FullDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+
+The user is prompted to confirm before it is executed.
+
 **To-Do** - List all the new functions that have been added!
 
 These PowerShell scripts are PowerShell Core (PS 6) compliant and were written with Visual Studio Code on a Mac. 
