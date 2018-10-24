@@ -48,3 +48,6 @@ Setup:
 }
 ```
 
+## Author
+
+* **Joshua Clark** - [MrTechGadget Github](https://github.com/MrTechGadget) [MrTechGadget Website](http://mrtechgadget.com/)
