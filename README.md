@@ -19,18 +19,25 @@ All of the devices returned in the first "page" in that organization group (and 
 EXAMPLE
   Get-ListOfStaleDevices.ps1 -pageSize 1000
 
-**Delete-User.ps1** - This script deletes users in AirWatch from a CSV list. The file is required, the column name is optional. If not provided, it will use the default column name of "Id".
-  .\Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
-It deletes in batches of 50 users per call. I have found that most calls with more than 70 or so users will fail. It has been tested to successfully delete over 16,000 users at a time. This takes a while of course as this is 320 batches.
-
-**Reset-FullDevice.ps1** - This script executes a full device wipe for a CSV list of serial numbers. 
-file parameter is the path to a CSV file with a list of Serial Numbers.  This is required.  
-fileColumn parameter is the Column title in CSV file containing SerialNumber values.  This is optional, with a default value of "SerialNumber". 
+**Delete-User.ps1** - This script deletes users from a CSV list of UserIds. The file is required, the column name is optional. If not provided, it will use the default column name of "Id". 
+Given this is a synchronous API call, the list is broken into batches of 50 per call, to prevent timeouts from occurring. The user is prompted to confirm before it is executed. A progress bar shows progress through all of the batches, and output to the window shows successes and failures of each batch, as well as any errors.
 
 EXAMPLE
-  .\Reset-FullDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+  Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
 
-The user is prompted to confirm before it is executed.
+**Reset-FullDevice.ps1** - This script executes a full device wipe for a CSV list of serial numbers. 
+file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. 
+The user is prompted to confirm before it is executed. A progress bar shows progress through all of devices, and output to the window and a log file shows successes and failures of each device, as well as any errors.
+
+EXAMPLE
+  Reset-FullDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+
+**Reset-EnterpriseWipe.ps1** - This script executes an Enterprise Wipe (unenroll) for a CSV list of serial numbers. 
+file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. 
+The user is prompted to confirm before it is executed. A progress bar shows progress through all of devices, and output to the window and a log file shows successes and failures of each device, as well as any errors.
+
+EXAMPLE
+  Reset-EnterpriseWipe.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
 
 ## Compatibility
 

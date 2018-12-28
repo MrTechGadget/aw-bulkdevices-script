@@ -20,6 +20,7 @@
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
+  Update Date:    12/28/2018
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -295,7 +296,8 @@ Function Send-Post {
         return $webReturn
     }
     catch {
-        Write-Host "Error submitting POST."
+        Write-Host "Error submitting POST. $($_.Exception.Message) "
+        return $webReturn
     }
 
 }
@@ -384,7 +386,7 @@ Function Remove-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by dev
     return $arr
 }
 
-Function Remove-DeviceFullWipe { # Enterprise Wipes List of devices by device id
+Function Remove-DeviceFullWipe { # Device Wipes List of devices by device id
     Param([array]$devices)
     $body = ""
     $arr = @()
