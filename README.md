@@ -14,13 +14,25 @@ The supervised devices are then issued full wipes and the unsupervised devices a
 
 **Delete-StaleDevices.ps1** - This script displays a list of all Organization groups in an environment, allowing the user to select an organization group. 
 The user then enters a number of days(X) since the devices have been last seen.
-All of the devices in that organization group (and child org groups) that have not been seen since X days and are pending enterprise wipe are deleted are exported to a CSV file named with that date.
+All of the devices returned in the first "page" in that organization group (and child org groups) that have not been seen since X days and are pending enterprise wipe are deleted are exported to a CSV file named with that date. You can set an optional pageSize parameter to process more or less devices than the default of 500 devices.
 
+EXAMPLE
+  Get-ListOfStaleDevices.ps1 -pageSize 1000
 
-**Delete-User.ps1** - This script deletes users given a file with a list of UserIds. Given this is a synchronous API call, the list is broken into batches of 50 per call, to prevent timeouts from occurring. A progress bar shows progress through all of the batches, and output to the window shows successes and failures of each batch, as well as any errors.
+**Delete-User.ps1** - This script deletes users in AirWatch from a CSV list. The file is required, the column name is optional. If not provided, it will use the default column name of "Id".
+  .\Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
+It deletes in batches of 50 users per call. I have found that most calls with more than 70 or so users will fail. It has been tested to successfully delete over 16,000 users at a time. This takes a while of course as this is 320 batches.
 
+**Reset-FullDevice.ps1** - This script executes a full device wipe for a CSV list of serial numbers. 
+file parameter is the path to a CSV file with a list of Serial Numbers.  This is required.  
+fileColumn parameter is the Column title in CSV file containing SerialNumber values.  This is optional, with a default value of "SerialNumber". 
 
-**To-Do** - List all the new functions that have been added!
+EXAMPLE
+  .\Reset-FullDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+
+The user is prompted to confirm before it is executed.
+
+## Compatibility
 
 These PowerShell scripts are PowerShell Core (PS 6) compliant and were written with Visual Studio Code on a Mac. 
 
@@ -36,3 +48,6 @@ Setup:
 }
 ```
 
+## Author
+
+* **Joshua Clark** - [MrTechGadget Github](https://github.com/MrTechGadget) [MrTechGadget Website](http://mrtechgadget.com/)
