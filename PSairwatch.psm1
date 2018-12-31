@@ -95,9 +95,9 @@ Function Read-File {
 
 Function Set-Header {
 
-    Param([string]$authoriztionString, [string]$tenantCode, [string]$acceptType, [string]$contentType)
+    Param([string]$authorizationString, [string]$tenantCode, [string]$acceptType, [string]$contentType)
 
-    $authString = $authoriztionString
+    $authString = $authorizationString
     $tcode = $tenantCode
     $accept = $acceptType
     $content = $contentType
@@ -139,6 +139,7 @@ Function Get-Profiles {
 }
 
 Function Get-OrgGroups {
+    $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
     $endpointURL = "https://${airwatchServer}/api/system/groups/search?orderby=name"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
     $OrgArray = New-Object System.Collections.Hashtable
@@ -171,7 +172,7 @@ Function Select-Tag {
     Do
     {
         $mhead
-        Write-Host # empty line
+        Write-Host 
         $TagArr = @()
         $i=0
         foreach($tag in $TagList.keys)
@@ -180,7 +181,7 @@ Function Select-Tag {
             $TagArr += $tag
             $i++
         }
-        Write-Host # empty line
+        Write-Host 
         $ans = (Read-Host 'Please enter selection') -as [int]
     
     } While ((-not $ans) -or (0 -gt $ans) -or ($TagList.Count -lt $ans))
@@ -191,12 +192,12 @@ Function Select-Tag {
 }
 
 Function Get-Device {
-    Param([string]$lastseen, [string]$lgid)
+    Param([string]$lastseen, [string]$lgid, [string]$pageSize = "500")
 
-
-    $endpointURL = "https://${airwatchServer}/api/mdm/devices/search?lastseen=${lastseen}&lgid=${lgid}&orderby=lastseen&sortorder=DESC"
+    $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
+    $endpointURL = "https://${airwatchServer}/api/mdm/devices/search?lastseen=${lastseen}&lgid=${lgid}&orderby=lastseen&sortorder=DESC&pagesize=${pageSize}"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
-    Write-Host "Total of $($webReturn.Total) devices match search, returning the first 500 results."
+    Write-Host "Total of $($webReturn.Total) devices match search, returning the first ${pageSize} results."
     return $webReturn.Devices
 }
 
@@ -268,6 +269,7 @@ Function Set-DeviceIdJSON {
 Function Get-DeviceDetails {
     Param([string]$addTagJSON)
     try {
+        $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
         $endpointURL = "https://${airwatchServer}/api/mdm/devices/id"
         $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addTagJSON
        
@@ -304,17 +306,7 @@ Function Send-Post {
 
 Function Set-DeviceIdList {
     Param([object]$Devices)
-    $s = @()
-    foreach ($device in $Devices) {
-        $s += $device.Id.Value
-        Write-Verbose $device.Id.Value
-    }
-    return $s
-}
-
-Function Set-DeviceIdListSupervision {
-    Param([object]$Devices)
-    $t = 0
+    $deviceCountSkipped = 0
     $super = @()
     $unsuper = @()
     foreach ($device in $Devices) {
@@ -328,10 +320,34 @@ Function Set-DeviceIdListSupervision {
             }
         } else {
             Write-Verbose "$($device.SerialNumber) is not enrolled, skipping"
-            $t++
+            $deviceCountSkipped++
         }
     }
-    Write-Host "Skipped $t devices that are not enrolled."
+    Write-Host "Skipped $deviceCountSkipped devices that are not enrolled."
+    $s = $unsuper,$super
+    return $s
+}
+
+Function Set-DeviceIdListSupervision {
+    Param([object]$Devices)
+    $deviceCountSkipped = 0
+    $super = @()
+    $unsuper = @()
+    foreach ($device in $Devices) {
+        if ($device.EnrollmentStatus -eq "Enrolled") {
+            if ($device.IsSupervised -eq $True) {
+                $super += $device.Id.Value
+                Write-Verbose "$($device.Id.Value) is supervised"
+            } else {
+                $unsuper += $device.Id.Value
+                Write-Verbose "$($device.Id.Value) is unsupervised"
+            }
+        } else {
+            Write-Verbose "$($device.SerialNumber) is not enrolled, skipping"
+            $deviceCountSkipped++
+        }
+    }
+    Write-Host "Skipped $deviceCountSkipped devices that are not enrolled."
     $s = $unsuper,$super
     return $s
 }
@@ -353,6 +369,7 @@ Function Install-PublicApp {
 Function Remove-DevicesEnterpriseWipe { # Enterprise Wipes List of devices by device id
     Param([string]$body)
     try {
+        $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
         $endpointURL = "https://${airwatchServer}/api/mdm/devices/commands/bulk?command=enterprisewipe&searchby=deviceid"
         $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $body
        
@@ -386,10 +403,12 @@ Function Remove-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by dev
     return $arr
 }
 
-Function Remove-DeviceFullWipe { # Device Wipes List of devices by device id
+Function Remove-DeviceFullWipe {
+    # Device Wipes List of devices by device id
     Param([array]$devices)
-    $body = ""
+    $body = " "
     $arr = @()
+    $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
     foreach ($deviceid in $devices) {
         try {
             $endpointURL = "https://${airwatchServer}/api/mdm/devices/${deviceid}/commands?command=DeviceWipe"
@@ -398,11 +417,11 @@ Function Remove-DeviceFullWipe { # Device Wipes List of devices by device id
                 $arr += $webReturn
             }
         }
-    catch {
-        $e = [int]$Error[0].Exception.Response.StatusCode
-        Write-Host "Error wiping device $deviceid. Status code $e. May not be any devices with that device id."
-        return $e
-    }
+        catch {
+            $e = [int]$Error[0].Exception.Response.StatusCode
+            Write-Host "Error wiping device $deviceid. Status code $e. May not be any devices with that device id."
+            return $e
+        }
     }
 
     return $arr
@@ -513,4 +532,4 @@ $version1 = "application/json;version=1"
 $version2 = "application/json;version=2"
 
 
-Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Remove-DeviceEnterpriseWipe, Remove-DeviceFullWipe, Set-DaysPrior, Set-LastSeenDate, Update-Devices, Split-Array, Send-Post
+Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Set-Header, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Remove-DevicesEnterpriseWipe, Remove-DeviceEnterpriseWipe, Remove-DeviceFullWipe, Set-DaysPrior, Set-LastSeenDate, Update-Devices, Split-Array, Send-Post
