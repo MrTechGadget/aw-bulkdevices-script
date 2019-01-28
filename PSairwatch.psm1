@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.0
+  Version:        2.1.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    12/28/2018
+  Update Date:    01/28/2018
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -354,8 +354,27 @@ Function Set-DeviceIdListSupervision {
 
 Function Install-PublicApp { 
     Param([string]$addJSON,[string]$appId)
+    $appType = "public"
+    Install-App($addJSON, $appId, $appType)
+}
+
+Function Install-InternalApp { 
+    Param([string]$addJSON,[string]$appId)
+    $appType = "internal"
+    Install-App($addJSON, $appId, $appType)
+}
+
+Function Install-PurchasedApp { 
+    Param([string]$addJSON,[string]$appId)
+    $appType = "purchased"
+    Install-App($addJSON, $appId, $appType)
+}
+
+Function Install-App { 
+    Param([string]$addJSON,[string]$appId,[string]$appType)
     try {
-        $endpointURL = "https://${airwatchServer}/api/mam/apps/public/${appId}/install"
+        $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
+        $endpointURL = "https://${airwatchServer}/api/mam/apps/${appType}/${appId}/install"
         $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addJSON
        
         return $webReturn
@@ -532,4 +551,4 @@ $version1 = "application/json;version=1"
 $version2 = "application/json;version=2"
 
 
-Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Set-Header, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Remove-DevicesEnterpriseWipe, Remove-DeviceEnterpriseWipe, Remove-DeviceFullWipe, Set-DaysPrior, Set-LastSeenDate, Update-Devices, Split-Array, Send-Post
+Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Set-Header, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Install-InternalApp, Install-PurchasedApp, Install-App, Remove-DevicesEnterpriseWipe, Remove-DeviceEnterpriseWipe, Remove-DeviceFullWipe, Set-DaysPrior, Set-LastSeenDate, Update-Devices, Split-Array, Send-Post
