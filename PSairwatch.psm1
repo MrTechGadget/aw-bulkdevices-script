@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.1.0
+  Version:        2.2.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    01/28/2018
+  Update Date:    02/13/2018
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -28,33 +28,52 @@
     Import-Module .\PSairwatch.psm1
 #>
 
-
-
 Function Read-Config {
     try {
         if (Test-Path "AirWatchConfig.json") {
-            $h = (Get-Content "AirWatchConfig.json") -join "`n" | ConvertFrom-Json
+            $Config = (Get-Content "AirWatchConfig.json") -join "`n" | ConvertFrom-Json
             Write-Verbose "Config file loaded."
+            if ($Config.groupid -and $Config.awtenantcode -and $Config.host) {
+                Write-Verbose "Config file formatted correctly."
+                return $Config
+            } else {
+                Write-Verbose "ConfigFile not correct, please complete the sample config and name the file AirWatchConfig.json"
+                Write-Host "-----------------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
+                Write-Host "ConfigFile not correct, please complete the sample config and name the file AirWatchConfig.json" -ForegroundColor Black -BackgroundColor Red
+                Write-Host "-----------------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
+                $Config
+                Set-Config
+            }
         } else {
             Write-Verbose "No config file exists, please complete the sample config and name the file AirWatchConfig.json "
             Write-Host "-----------------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
             Write-Host "No config file exists, please complete the sample config and name the file AirWatchConfig.json " -ForegroundColor Black -BackgroundColor Red
             Write-Host "-----------------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
+            Set-Config
         }
-        if ($h.groupid -and $h.awtenantcode -and $h.host) {
-            Write-Verbose "Config file formatted correctly."
-            return $h
-        } else {
-            Write-Verbose "ConfigFile not correct, please complete the sample config and name the file AirWatchConfig.json"
-            Write-Host "-----------------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-            Write-Host "ConfigFile not correct, please complete the sample config and name the file AirWatchConfig.json" -ForegroundColor Black -BackgroundColor Red
-            Write-Host "-----------------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-        }
+        
     }
     catch {
         Write-Verbose "No config file exists, please complete the sample config and name the file AirWatchConfig.json"
         Write-Host "No config file exists, please complete the sample config and name the file AirWatchConfig.json"
+        Set-Config
     }
+}
+
+Function Set-Config {
+    $host = Read-Host "Enter FQDN of API server, do not include protocol or path"
+    $awtenantcode = Read-Host "Enter API Key"
+    $groupid = Read-Host "Enter Group ID (numerical value)"
+    $configuration = @{}
+    $configuration.Add("groupid", $groupid)
+    $configuration.Add("awtenantcode", $awtenantcode)
+    $configuration.Add("host", $host)
+    ConvertTo-Json -InputObject $configuration > ./AirWatchConfig.json
+    do {
+        Start-Sleep -s 1
+    } until (Test-Path "AirWatchConfig.json")
+    Start-Sleep -s 3
+    Read-Config
 }
 
 <#  This implementation uses Basic authentication. #>
@@ -542,8 +561,8 @@ Function Split-Array {
 }
 
 <# Set configurations #>
-$restUserName = Get-BasicUserForAuth
 $Config = Read-Config
+$restUserName = Get-BasicUserForAuth
 $tenantAPIKey = $Config.awtenantcode
 $organizationGroupID = $Config.groupid
 $airwatchServer = $Config.host
