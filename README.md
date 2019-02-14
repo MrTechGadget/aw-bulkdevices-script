@@ -46,7 +46,7 @@ These PowerShell scripts are PowerShell Core (PS 6) compliant and were written w
 They have been tested on Windows and Mac, but should also run on Linux. 
 
 Setup:
-* These scripts take a JSON config file, which houses the API Host, API key and Organization Group ID for your AirWatch environment. A sample file has been included, just remove the name sample and add your fields, with NO quotations. Name this file `AirWatchConfig.json`
+* These scripts take a JSON config file, `AirWatchConfig.json`, which houses the API Host, API key and Organization Group ID for your AirWatch environment. The format is shown below but if the file is not present, the script will prompt for the values and write the file for you.
 ```
 {
     "groupid" : 1234,
