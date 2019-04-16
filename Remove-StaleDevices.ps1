@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Creates List of Devices that have not checked in with AirWatch since a configurable number of days ago and Executes Full or Enterprise Wipes.
+  Executes Full or Enterprise Wipe Commands for enrolled devices that have not checked in with AirWatch since a configurable number of days ago.
 .DESCRIPTION
   This script displays a list of all Organization groups in an environment, allowing the user to select an organization group. 
   The user then enters a number of days(X) since the devices have been last seen.
@@ -12,10 +12,10 @@
 .OUTPUTS
   Outputs two CSV files with Devices that have not been seen in X number of days. One that are supervised, one that are unsupervised.
 .NOTES
-  Version:        1.5
+  Version:        1.6
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  09/15/2017
-  Last Updated:   12/31/2018
+  Last Updated:   04/16/2019
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
   
 .EXAMPLE
@@ -30,8 +30,7 @@ Param(
 
 Import-Module .\PSairwatch.psm1
 
-<# Build the headers and send the request to the server. #>
-$useJSON = "application/json"
+
 $OrgGroups = Get-OrgGroups
 $GroupID = Select-Tag $OrgGroups
 $DaysPrior = Set-DaysPrior
@@ -50,8 +49,8 @@ $SupervisedDeviceDetails | Export-Csv -Path "SupervisedDevicesLastSeen${LastSeen
 $UnsupervisedDeviceDetails | Export-Csv -Path "UnsupervisedDevicesLastSeen${LastSeenDate}.csv"
 Write-Host "------------------------------"
 Write-Host ""
-$FullWipe = Remove-DeviceFullWipe $DeviceList[1]
-$EnterpriseWipe = Remove-DevicesEnterpriseWipe $UnsupervisedDeviceJSON
+$FullWipe = Unregister-DeviceFullWipe $DeviceList[1]
+$EnterpriseWipe = Unregister-DevicesEnterpriseWipe $UnsupervisedDeviceJSON
 
 Write-Host ""
 $FullWipe

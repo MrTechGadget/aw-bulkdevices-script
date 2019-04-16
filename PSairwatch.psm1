@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.2.1
+  Version:        2.3
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    02/13/2019
+  Update Date:    04/16/2019
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -296,7 +296,7 @@ Function Get-DeviceDetails {
         return $webReturn.Devices
     }
     catch {
-        Write-Host "Error retrieving device details. May not be any devices with the selected tag."
+        Write-Host "Error retrieving device details. May not be any devices matching."
     }
 
 }
@@ -346,6 +346,26 @@ Function Set-DeviceIdList {
     Write-Host "Skipped $deviceCountSkipped devices that are not enrolled."
     $s = $unsuper,$super
     return $s
+}
+
+Function Set-UnenrolledDeviceIdList {
+    Param([object]$Devices)
+    $t = 0
+    $entwipe = @()
+    foreach ($device in $Devices) {
+        if ($device.EnrollmentStatus -eq "EnterpriseWipePending") {
+            $entwipe += $device.Id.Value
+            Write-Verbose "$($device.SerialNumber) is EnterpriseWipePending"
+        } elseif ($device.EnrollmentStatus -eq "Unenrolled") {
+            $entwipe += $device.Id.Value
+            Write-Verbose "$($device.SerialNumber) is Unenrolled"
+        } else {
+            Write-Verbose "$($device.SerialNumber) is not pending Enterprise Wipe or unenrolled, skipping"
+            $t++
+        }
+    }
+    Write-Host "Skipped $t devices that are not pending enterprise wipe or unenrolled."
+    return $entwipe
 }
 
 Function Set-DeviceIdListSupervision {
@@ -405,7 +425,7 @@ Function Install-App {
 
 }
 
-Function Remove-DevicesEnterpriseWipe { # Enterprise Wipes List of devices by device id
+Function Unregister-DevicesEnterpriseWipe { # Enterprise Wipes List of devices by device id
     Param([string]$body)
     try {
         $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
@@ -420,7 +440,7 @@ Function Remove-DevicesEnterpriseWipe { # Enterprise Wipes List of devices by de
 
 }
 
-Function Remove-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by device id
+Function Unregister-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by device id
     Param([array]$devices)
     $body = ""
     $arr = @()
@@ -442,7 +462,7 @@ Function Remove-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by dev
     return $arr
 }
 
-Function Remove-DeviceFullWipe {
+Function Unregister-DeviceFullWipe {
     # Device Wipes List of devices by device id
     Param([array]$devices)
     $body = " "
@@ -464,6 +484,20 @@ Function Remove-DeviceFullWipe {
     }
 
     return $arr
+}
+
+Function Remove-DeviceBulk {
+    Param([string]$addTagJSON)
+    try {
+        $endpointURL = "https://${airwatchServer}/api/mdm/devices/bulk"
+        $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addTagJSON
+       
+        return $webReturn
+    }
+    catch {
+        return [int]$Error[0].Exception.Response.StatusCode
+    }
+
 }
 
 Function Set-DaysPrior {
