@@ -489,6 +489,7 @@ Function Unregister-DeviceFullWipe {
 Function Remove-DeviceBulk {
     Param([string]$addTagJSON)
     try {
+        $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
         $endpointURL = "https://${airwatchServer}/api/mdm/devices/bulk"
         $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addTagJSON
        
