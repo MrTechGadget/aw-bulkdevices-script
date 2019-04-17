@@ -16,7 +16,7 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.3
+  Version:        2.3.1
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
@@ -137,7 +137,7 @@ Function Get-Tags {
     $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
     $endpointURL = "https://${airwatchServer}/api/mdm/tags/search?organizationgroupid=${organizationGroupID}"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
-    $TagArray = New-Object System.Collections.Hashtable
+    $TagArray = New-Object System.Collections.Specialized.OrderedDictionary
     foreach ($tag in $webReturn.Tags) {
         $TagArray.Add($tag.TagName, $tag.Id.Value)
     }
@@ -148,7 +148,7 @@ Function Get-Profiles {
     Param([string]$GroupID, [string]$platform)
     $endpointURL = "https://${airwatchServer}/api/mdm/profiles/search?organizationgroupid=${GroupID}"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
-    $Array = New-Object System.Collections.Hashtable
+    $Array = New-Object System.Collections.Specialized.OrderedDictionary
     foreach ($profile in $webReturn.Profiles) {
         if ($profile.Platform -eq $platform) {
             $Array.Add($profile.ProfileName, $profile.Id.Value)
@@ -162,7 +162,7 @@ Function Get-OrgGroups {
     $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
     $endpointURL = "https://${airwatchServer}/api/system/groups/search?orderby=name"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
-    $OrgArray = New-Object System.Collections.Hashtable
+    $OrgArray = New-Object System.Collections.Specialized.OrderedDictionary
     foreach ($org in $webReturn.LocationGroups) {
         $OrgArray.Add($org.Name, $org.Id.Value)
     }
@@ -605,4 +605,4 @@ $version1 = "application/json;version=1"
 $version2 = "application/json;version=2"
 
 
-Export-ModuleMember -Function Read-File, Get-BasicUserForAuth, Set-Header, Get-Tags, Get-Profiles, Get-OrgGroups, Select-Platform, Select-Tag, Get-Device, Set-AddTagJSON, Set-DeviceIdJSON, Get-DeviceDetails, Set-DeviceIdList, Set-DeviceIdListSupervision, Install-PublicApp, Install-InternalApp, Install-PurchasedApp, Install-App, Remove-DevicesEnterpriseWipe, Remove-DeviceEnterpriseWipe, Remove-DeviceFullWipe, Set-DaysPrior, Set-LastSeenDate, Update-Devices, Split-Array, Send-Post
+Export-ModuleMember -Function *
