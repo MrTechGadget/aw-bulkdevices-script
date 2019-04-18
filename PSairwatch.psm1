@@ -469,6 +469,7 @@ Function Unregister-DeviceFullWipe {
     $arr = @()
     $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
     foreach ($deviceid in $devices) {
+        Write-Progress -Activity "Deleting Devices..." -Status "Wiping $($devices.IndexOf($deviceid)+1) of $($devices.Count)" -CurrentOperation "$deviceid" -PercentComplete ((($devices.IndexOf($devices)+1)/($devices.Count))*100)
         try {
             $endpointURL = "https://${airwatchServer}/api/mdm/devices/${deviceid}/commands?command=DeviceWipe"
             $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $body
@@ -478,8 +479,7 @@ Function Unregister-DeviceFullWipe {
         }
         catch {
             $e = [int]$Error[0].Exception.Response.StatusCode
-            Write-Host "Error wiping device $deviceid. Status code $e. May not be any devices with that device id."
-            return $e
+            Write-Error "Error wiping device $deviceid. Status code $e. May not be any devices with that device id."
         }
     }
 
