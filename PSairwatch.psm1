@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.3.1
+  Version:        2.3.2
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    04/16/2019
+  Update Date:    10/08/2019
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -146,6 +146,7 @@ Function Get-Tags {
 
 Function Get-Profiles {
     Param([string]$GroupID, [string]$platform)
+    $headers = Set-Header $restUserName $tenantAPIKey "application/json" "application/json"
     $endpointURL = "https://${airwatchServer}/api/mdm/profiles/search?organizationgroupid=${GroupID}"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
     $Array = New-Object System.Collections.Specialized.OrderedDictionary
