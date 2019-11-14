@@ -10,19 +10,21 @@
 .OUTPUTS
   Outputs a CSV file with Devices that have not been seen in X number of days.
 .NOTES
-  Version:        1.2
+  Version:        1.3
   Author:         Joshua Clark @audioeng
-  Site:           https://github.com/audioeng/aw-bulkdevices-script
+  Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  09/15/2017
-  Update Date:    02/13/2019
+  Last Update:    11/14/2019
 .EXAMPLE
-  Get-ListOfStaleDevices.ps1 -pageSize 1000
+  Get-ListOfStaleDevices.ps1 -pageSize 1000 -maxLastSeen 250
 #>
 
 [CmdletBinding()] 
 Param(
    [Parameter(HelpMessage="Number of devices returned, default is 500")]
-   [string]$pageSize = "500"
+   [string]$pageSize = "500",
+   [Parameter(HelpMessage="Maximum number of days since devices were last seen, default is 200")]
+   [string]$maxLastSeen = "200"
 )
 
 Import-Module .\PSairwatch.psm1
@@ -43,7 +45,7 @@ Start of Script
 
 $OrgGroups = Get-OrgGroups
 $GroupID = Select-Tag $OrgGroups
-$DaysPrior = Set-DaysPrior
+$DaysPrior = Set-DaysPrior $maxLastSeen
 $LastSeenDate = Set-LastSeenDate $DaysPrior
 "Devices last seen on or before " + $LastSeenDate 
 $Devices = Get-Device $LastSeenDate $GroupID $pageSize

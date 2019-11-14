@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.3.1
+  Version:        2.3.2
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    04/16/2019
+  Update Date:    11/14/2019
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -359,8 +359,11 @@ Function Set-UnenrolledDeviceIdList {
         } elseif ($device.EnrollmentStatus -eq "Unenrolled") {
             $entwipe += $device.Id.Value
             Write-Verbose "$($device.SerialNumber) is Unenrolled"
+        } elseif ($device.EnrollmentStatus -eq "WipeInitiated") {
+            $entwipe += $device.Id.Value
+            Write-Verbose "$($device.SerialNumber) is WipeInitiated"
         } else {
-            Write-Verbose "$($device.SerialNumber) is not pending Enterprise Wipe or unenrolled, skipping"
+            Write-Verbose "$($device.SerialNumber) is not pending Enterprise Wipe, Device WipeInitiated or unenrolled, skipping"
             $t++
         }
     }
@@ -502,14 +505,18 @@ Function Remove-DeviceBulk {
 }
 
 Function Set-DaysPrior {
+    Param(
+        [Parameter(HelpMessage="Maximum number of days since devices were last seen, default is 200")]
+        [string]$maxLastSeen = "200"
+        )
     do {
         try {
             $numOk = $true
-            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and 200)"
+            [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and ${maxLastSeen})"
             } # end try
         catch {$numOK = $false}
         } # end do 
-    until (($days -ge 15 -and $days -lt 201) -and $numOK)
+    until (($days -ge 15 -and $days -le [int]$maxLastSeen) -and $numOK)
     return 0-$days
 }
 
