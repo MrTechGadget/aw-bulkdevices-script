@@ -13,10 +13,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.2
+  Version:        1.3
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  10/02/2018
-  Update Date:    12/28/2018
+  Update Date:    12/05/2019
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Reset-FullDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
@@ -67,16 +67,32 @@ if ($decision -eq 0) {
         try {
             $result = Send-Post -endpoint $endpointURL -body $json -version "application/json;version=2"
             if ($result -ne "") {
-                Write-Warning "Error Wiping Device: $item :$result"
-                Write-Log "Error Wiping Device: $item :$result"
+              $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
+              if ($err.errorCode -in 400, 5100) {
+                Write-Warning ("Error Wiping Device: $item : Error " +$err.errorCode + ", might be an Android device, retrying with different parameters")
+                $result = Send-Post -endpoint $endpointURL -body "{}" -version "application/json;version=2"
+                if ($result -ne "") {
+                  $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
+                  Write-Warning ("Error Wiping Device: $item : " + $err.errorCode + " " + $err.message)
+                  Write-Log ("Error Wiping Device: $item : " + $err.errorCode + " " + $err.message)
+                } else {
+                  Write-Host "$item Wiped $result"
+                  Write-Log "$item Wiped $result"
+                }
+              } else {
+                Write-Warning ("Error Wiping Device: $item : Error", $err.errorCode, $err.message)
+                Write-Log ("Error Wiping Device: $item : Error", $err.errorCode, $err.message)
+              }
+                
             } else {
                 Write-Host "$item Wiped $result"
                 Write-Log "$item Wiped $result"
             }
         }
         catch {
-            Write-Warning "Error Sending Device Wipe Command: $item"
-            Write-Log "Error Sending Device Wipe Command: $item"
+          $err2 = ($Error[0].ErrorDetails.Message)
+          Write-Warning "Error Sending Device Wipe Command: $item $err2"
+          Write-Log "Error Sending Device Wipe Command: $item $err2"
         }
     }
 } else {
