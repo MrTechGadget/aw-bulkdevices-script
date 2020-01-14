@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.3.2
+  Version:        2.4.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    11/14/2019
+  Update Date:    01/14/2020
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -61,13 +61,13 @@ Function Read-Config {
 }
 
 Function Set-Config {
-    $host = Read-Host "Enter FQDN of API server, do not include protocol or path"
+    $apihost = Read-Host "Enter FQDN of API server, do not include protocol or path"
     $awtenantcode = Read-Host "Enter API Key"
     $groupid = Read-Host "Enter Group ID (numerical value)"
     $configuration = @{}
     $configuration.Add("groupid", $groupid)
     $configuration.Add("awtenantcode", $awtenantcode)
-    $configuration.Add("host", $host)
+    $configuration.Add("host", $apihost)
     ConvertTo-Json -InputObject $configuration > ./AirWatchConfig.json
     do {
         Start-Sleep -s 1
@@ -104,6 +104,25 @@ Function Read-File {
         }
 
         return $s
+    } else {
+        Write-Verbose "$file does not exist."
+        Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
+        Write-Host "      No $file file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
+        Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
+    }   
+}
+
+Function Read-FileWithData {
+    Param([string]$file, [string]$head, [string]$extraColumn)
+    if (Test-Path $file) {
+        Write-Verbose "$file exists, importing list."
+        $data = Import-Csv -Path $file
+        if ($data.$head) {
+            return $data
+        } else {
+            Write-Error -Message "No such column, $head, in CSV file $file."
+        }
+        
     } else {
         Write-Verbose "$file does not exist."
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
@@ -320,6 +339,29 @@ Function Send-Post {
     }
     catch {
         Write-Host "Error submitting POST. $($_.Exception.Message) "
+        return $webReturn
+    }
+
+}
+
+Function Send-Put {
+    Param(
+        [Parameter(Mandatory=$True,HelpMessage="Rest Endpoint for PUT, after https://airwatchServer/api/")]
+        [string]$endpoint,
+        [Parameter(Mandatory=$True,HelpMessage="Body to be sent")]
+        [string]$body,
+        [Parameter(HelpMessage="Version of API")]
+        [string]$version = $version1
+        )
+    $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
+    try {
+        $endpointURL = "https://${airwatchServer}/api/${endpoint}"
+        $webReturn = Invoke-RestMethod -Method Put -Uri $endpointURL -Headers $headers -Body $body
+       
+        return $webReturn
+    }
+    catch {
+        Write-Host "Error submitting PUT. $($_.Exception.Message) "
         return $webReturn
     }
 
