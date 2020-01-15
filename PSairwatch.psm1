@@ -316,7 +316,7 @@ Function Get-DeviceDetails {
         return $webReturn.Devices
     }
     catch {
-        Write-Host "Error retrieving device details. May not be any devices matching."
+        Write-Warning "Error retrieving device details. May not be any devices matching."
     }
 
 }
@@ -338,7 +338,7 @@ Function Send-Post {
         return $webReturn
     }
     catch {
-        Write-Host "Error submitting POST. $($_.Exception.Message) "
+        Write-Warning "Error submitting POST. $($_.Exception.Message) "
         return $webReturn
     }
 
@@ -361,7 +361,7 @@ Function Send-Put {
         return $webReturn
     }
     catch {
-        Write-Host "Error submitting PUT. $($_.Exception.Message) "
+        Write-Warning "Error submitting PUT. $($_.Exception.Message) "
         return $webReturn
     }
 
@@ -655,5 +655,4 @@ $airwatchServer = $Config.host
 $version1 = "application/json;version=1"
 $version2 = "application/json;version=2"
 
-
-Export-ModuleMember -Function *
+Export-ModuleMember -Function * -Variable $version1,$version2

@@ -53,56 +53,37 @@ $list = Read-FileWithData $file $fileColumn $assetColumn
 Write-Log "$($MyInvocation.Line)"
 
 $decision = $Host.UI.PromptForChoice(
-    "Attention! If you proceed, " + $list.count + " devices will have their AssetNumber overwritten in AirWatch",
+    "Attention! If you proceed, " + @($list).count + " devices will have their AssetNumber overwritten in AirWatch",
     "",
     @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
     Write-Log "Replacing asset numbers on $($list.count) devices in AirWatch"
-    
-#working, but need to clean up and change logged info to reflect Asset vs wipe.
+    $i = 0
     foreach ($item in $list) {
-        #errors in write-progress because of IndexOf missing in a PSCustomObject
-        Write-Progress -Activity "Editing Devices..." -Status "Batch $($list.IndexOf($item)+1) of $($list.Count)" -CurrentOperation "$item" -PercentComplete ((($list.IndexOf($list)+1)/($list.Count))*100)
+        $i++
+        Write-Progress -Activity "Editing Devices..." -Status "$($i) of $($list.Count)" -CurrentOperation "$($item.$fileColumn) : $($item.$assetColumn)" -PercentComplete ((($i)/(@($list).Count))*100)
         $endpointURL = "mdm/devices?searchBy=Serialnumber&id=$($item.$fileColumn)"
         $json = @{AssetNumber=$item.$assetColumn} | ConvertTo-Json
         try {
-            $result = Send-Put -endpoint $endpointURL -body $json -version "application/json;version=1"
+            $result = Send-Put -endpoint $endpointURL -body $json -version $version1
             if ($result -ne "") {
               $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
-              #put in differnet error checking
-              if ($err.errorCode -in 400, 5100) {
-                Write-Warning ("Error Wiping Device: $item : Error " +$err.errorCode + ", might be an Android device, retrying with different parameters")
-                $result = Send-Post -endpoint $endpointURL -body "{}" -version "application/json;version=2"
-                if ($result -ne "") {
-                  $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
-                  Write-Warning ("Error Wiping Device: $item : " + $err.errorCode + " " + $err.message)
-                  Write-Log ("Error Wiping Device: $item : " + $err.errorCode + " " + $err.message)
-                } else {
-                  Write-Host "$item Wiped $result"
-                  Write-Log "$item Wiped $result"
-                }
-              } else {
-                Write-Warning ("Error Wiping Device: $item : Error", $err.errorCode, $err.message)
-                Write-Log ("Error Wiping Device: $item : Error", $err.errorCode, $err.message)
-              }
-                
+              Write-Warning ("Error Setting AssetNumber: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
+              Write-Log ("Error Setting AssetNumber: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
             } else {
-                Write-Host "$item Wiped $result"
-                Write-Log "$item Wiped $result"
+                Write-Host "$($item.$fileColumn) set to $($item.$assetColumn) $result"
+                Write-Log "$($item.$fileColumn) set to $($item.$assetColumn) $result"
             }
         }
         catch {
           $err2 = ($Error[0].ErrorDetails.Message)
-          Write-Warning "Error Sending Device Wipe Command: $item $err2"
-          Write-Log "Error Sending Device Wipe Command: $item $err2"
+          Write-Warning "Error Setting AssetNumber: $($item.$fileColumn) to $($item.$assetColumn) $err2"
+          Write-Log "Error Setting AssetNumber: $($item.$fileColumn) to $($item.$assetColumn) $err2"
         }
     }
 } else {
-    Write-Host "Deletion Cancelled"
-    Write-Log "Deletion Cancelled"
+    Write-Host "Action Cancelled"
+    Write-Log "Action Cancelled"
 }
-
-
-
 
