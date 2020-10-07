@@ -25,6 +25,13 @@ Given this is a synchronous API call, the list is broken into batches of 50 per 
 EXAMPLE
   Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
 
+**Invoke-RebootDevice.ps1** - Reboots devices given a list of SerialNumbers. Uses the Command API to SoftReset (reboot) the device.
+file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. 
+The user is prompted to confirm before it is executed. Output to the window and a log file shows successes and failures of devices, as well as any errors.
+
+EXAMPLE
+  Invoke-RebootDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+
 **Reset-FullDevice.ps1** - This script executes a full device wipe for a CSV list of serial numbers. 
 file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. 
 The user is prompted to confirm before it is executed. A progress bar shows progress through all of devices, and output to the window and a log file shows successes and failures of each device, as well as any errors.
