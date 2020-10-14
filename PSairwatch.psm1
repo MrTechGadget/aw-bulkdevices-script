@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.4.0
+  Version:        2.6.1
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    01/14/2020
+  Update Date:    10/14/2020
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -575,7 +575,7 @@ Function Set-LastSeenDate {
 }
 
 Function Update-Devices {
-    Param([array]$devices, $profile)
+    Param([array]$devices, $ProfileSelected)
     $body = ""
     $quoteCharacter = [char]34
     foreach ($deviceid in $devices) {
@@ -583,23 +583,23 @@ Function Update-Devices {
             $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
             $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers 
             if ($webReturn) {
-                $r = $webReturn.DeviceProfiles | Where-Object { $_.Id.Value -eq $profile}
+                $r = $webReturn.DeviceProfiles | Where-Object { $_.Id.Value -eq $ProfileSelected}
                 if ($r.Status -eq 1) {
                     $devid = $webReturn.DeviceId.Id.Value
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$profile/install"
+                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
                     $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
                     Write-Host $devid  "  install queued   " + $webReturn2
                 } elseif ($r.Status -eq 0) {
                     $devid = $webReturn.DeviceId.Id.Value
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$profile/install"
+                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
                     $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
                     Write-Host $devid  "  install queued   " + $webReturn2
                 } elseif ($r.Status -eq 3) {
                     Write-Host $webReturn.DeviceId.Id.Value profile already installed.
                 } elseif ($r.Status -eq 6) {
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$profile/install"
+                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
                     $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
                     Write-Host $devid  "  Previous Error, install queued   " + $webReturn2
