@@ -405,12 +405,15 @@ Function Set-UnenrolledDeviceIdList {
         } elseif ($device.EnrollmentStatus -eq "WipeInitiated") {
             $entwipe += $device.Id.Value
             Write-Verbose "$($device.SerialNumber) is WipeInitiated"
+        } elseif ($device.EnrollmentStatus -eq "DeviceWipePending") {
+            $entwipe += $device.Id.Value
+            Write-Verbose "$($device.SerialNumber) is DeviceWipePending"
         } else {
-            Write-Verbose "$($device.SerialNumber) is not pending Enterprise Wipe, Device WipeInitiated or unenrolled, skipping"
+            Write-Verbose "$($device.SerialNumber) is not pending Enterprise Wipe, Device WipeInitiated, DeviceWipePending, or Unenrolled, skipping"
             $t++
         }
     }
-    Write-Host "Skipped $t devices that are not pending enterprise wipe or unenrolled."
+    Write-Host "Skipped $t devices that are not pending wipe or unenrolled."
     return $entwipe
 }
 
