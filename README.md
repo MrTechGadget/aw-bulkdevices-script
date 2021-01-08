@@ -43,6 +43,9 @@ EXAMPLE
 file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. 
 The user is prompted to confirm before it is executed. A progress bar shows progress through all of devices, and output to the window and a log file shows successes and failures of each device, as well as any errors.
 
+**Get-DeviceDetails.ps1** - Gets Device Details given a list of SerialNumbers and Desired names.
+file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. searchBy parameter (OPTIONAL, with a default value of "SerialNumber") is the type of identification number to use in search.
+
 EXAMPLE
   Reset-EnterpriseWipe.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
 
