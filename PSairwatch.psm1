@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.7.0
+  Version:        2.8.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    01/08/2021
+  Update Date:    01/09/2021
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -317,6 +317,27 @@ Function Get-DeviceDetails {
     }
     catch {
         Write-Warning "Error retrieving device details. May not be any devices matching."
+    }
+
+}
+
+Function Send-Get {
+    Param(
+        [Parameter(Mandatory=$True,HelpMessage="Rest Endpoint for Get, after https://airwatchServer/api/")]
+        [string]$endpoint,
+        [Parameter(HelpMessage="Version of API")]
+        [string]$version = $version1
+        )
+    $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
+    try {
+        $endpointURL = "https://${airwatchServer}/api/${endpoint}"
+        $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
+       
+        return $webReturn
+    }
+    catch {
+        Write-Warning "Error submitting Get. $($_.Exception.Message) "
+        return $webReturn
     }
 
 }
