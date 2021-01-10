@@ -339,7 +339,6 @@ Function Send-Get {
         Write-Warning "Error submitting Get. $($_.Exception.Message) "
         return $webReturn
     }
-
 }
 
 Function Send-Post {
@@ -362,7 +361,6 @@ Function Send-Post {
         Write-Warning "Error submitting POST. $($_.Exception.Message) "
         return $webReturn
     }
-
 }
 
 Function Send-Put {
@@ -385,7 +383,26 @@ Function Send-Put {
         Write-Warning "Error submitting PUT. $($_.Exception.Message) "
         return $webReturn
     }
+}
 
+Function Send-Delete {
+    Param(
+        [Parameter(Mandatory=$True,HelpMessage="Rest Endpoint for Delete, after https://airwatchServer/api/")]
+        [string]$endpoint,
+        [Parameter(HelpMessage="Version of API")]
+        [string]$version = $version1
+        )
+    $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
+    try {
+        $endpointURL = "https://${airwatchServer}/api/${endpoint}"
+        $webReturn = Invoke-RestMethod -Method Delete -Uri $endpointURL -Headers $headers
+       
+        return $webReturn
+    }
+    catch {
+        Write-Warning "Error submitting Delete. $($_.Exception.Message) "
+        return $webReturn
+    }
 }
 
 Function Set-DeviceIdList {

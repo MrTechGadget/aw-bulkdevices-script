@@ -18,7 +18,7 @@
   Update Date:    01/09/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
-  .\Get-Profiles.ps1 -query "status=Active&platform=Apple"
+  .\Get-Profile.ps1 -query "status=Active&platform=Apple"
 #>
 
 

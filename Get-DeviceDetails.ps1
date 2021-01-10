@@ -7,8 +7,8 @@
     Path of a CSV file with a list of Serial Numbers and desired Asset Numbers.  This is required. 
 .PARAMETER fileColumn 
     Column title in CSV file containing SerialNumber values.  This is optional, with a default value of "SerialNumber". 
-.PARAMETER deviceColumn 
-    Column title in CSV file containing DeviceName values.  This is optional, with a default value of "DeviceName". 
+.PARAMETER searchBy 
+    Type of Id to search by.  This is optional, with a default value of "SerialNumber". 
 .INPUTS
   AirWatchConfig.json
   CSV File with headers

@@ -43,15 +43,31 @@ EXAMPLE
 file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. 
 The user is prompted to confirm before it is executed. A progress bar shows progress through all of devices, and output to the window and a log file shows successes and failures of each device, as well as any errors.
 
+EXAMPLE
+  Reset-EnterpriseWipe.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+
 **Get-DeviceDetails.ps1** - Gets Device Details given a list of SerialNumbers and Desired names.
 file parameter (REQUIRED) is the path to a CSV file with a list of Serial Numbers. fileColumn parameter (OPTIONAL, with a default value of "SerialNumber") is the Column title in CSV file containing SerialNumber values. searchBy parameter (OPTIONAL, with a default value of "SerialNumber") is the type of identification number to use in search.
 
 EXAMPLE
-  Reset-EnterpriseWipe.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+  Get-DeviceDetails.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+
+**Get-Profile.ps1** - Gets Profiles with optional query parameters to limit results. 
+Optional query parameters to refine search. For values, refer to API documentation. https://as135.awmdm.com/api/help/#!/apis/10003?!/ProfilesV2/ProfilesV2_Search 
+Multiple parameters should be joined with "&"
+
+EXAMPLE
+  Get-Profiles.ps1 -query "status=Active&platform=Apple"
+
+**Delete-Profile.ps1** - Deletes Profiles given a list of Profile IDs. 
+file parameter (REQUIRED) is the path to a CSV file with a list of Profile IDs. 
+fileColumn parameter (OPTIONAL, with a default value of "ProfileId") is the Column title in CSV file containing ProfileId values.
+EXAMPLE
+  Delete-Profile.ps1 -file .\ProfilesTest.csv -fileColumn "ProfileId"
 
 ## Compatibility
 
-These PowerShell scripts are PowerShell Core (PS 6) compliant and were written with Visual Studio Code on a Mac. 
+These PowerShell scripts are PowerShell Core (PS 6+) compliant and were written with Visual Studio Code on a Mac. 
 
 They have been tested on Windows and Mac, but should also run on Linux. 
 
