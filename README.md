@@ -62,9 +62,18 @@ EXAMPLE
 **Delete-Profile.ps1** - Deletes Profiles given a list of Profile IDs. 
 file parameter (REQUIRED) is the path to a CSV file with a list of Profile IDs. 
 fileColumn parameter (OPTIONAL, with a default value of "ProfileId") is the Column title in CSV file containing ProfileId values.
+
 EXAMPLE
   Delete-Profile.ps1 -file .\ProfilesTest.csv -fileColumn "ProfileId"
 
+**Set-CheckoutDevice.ps1** - Assigns staged device to user via checkout API.
+file parameter - Path of a CSV file with a list of DeviceId and desired UserId.  This is required. 
+deviceColumn parameter - Column title in CSV file containing DeviceId values.  This is optional, with a default value of "DeviceId". 
+userColumn parameter - Column title in CSV file containing UserId values.  This is optional, with a default value of "UserId". 
+
+EXAMPLE
+  Set-CheckoutDevice.ps1 -file "Devices.csv" -deviceColumn "DeviceId" -userColumn "UserId"
+  
 ## Compatibility
 
 These PowerShell scripts are PowerShell Core (PS 6+) compliant and were written with Visual Studio Code on a Mac. 

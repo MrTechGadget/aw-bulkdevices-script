@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.8.0
+  Version:        2.9.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    01/09/2021
+  Update Date:    01/20/2021
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -376,6 +376,26 @@ Function Send-Put {
     try {
         $endpointURL = "https://${airwatchServer}/api/${endpoint}"
         $webReturn = Invoke-RestMethod -Method Put -Uri $endpointURL -Headers $headers -Body $body
+       
+        return $webReturn
+    }
+    catch {
+        Write-Warning "Error submitting PUT. $($_.Exception.Message) "
+        return $webReturn
+    }
+}
+
+Function Send-Patch {
+    Param(
+        [Parameter(Mandatory=$True,HelpMessage="Rest Endpoint for Patch, after https://airwatchServer/api/")]
+        [string]$endpoint,
+        [Parameter(HelpMessage="Version of API")]
+        [string]$version = $version1
+        )
+    $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
+    try {
+        $endpointURL = "https://${airwatchServer}/api/${endpoint}"
+        $webReturn = Invoke-RestMethod -Method Patch -Uri $endpointURL -Headers $headers
        
         return $webReturn
     }
