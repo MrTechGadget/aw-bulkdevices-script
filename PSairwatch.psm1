@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.9.0
+  Version:        2.10.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    01/20/2021
+  Update Date:    07/30/2021
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -319,6 +319,19 @@ Function Get-DeviceDetails {
         Write-Warning "Error retrieving device details. May not be any devices matching."
     }
 
+}
+
+Function Get-TaggedDevice {
+    Param([string]$SelectedTag)
+
+    $endpoint = "mdm/tags/${SelectedTag}/devices?"
+    $webReturn = Send-Get $endpoint
+    $s = @()
+    foreach ($device in $webReturn.Device) {
+        $s += $device.DeviceId
+        Write-Verbose $device.DeviceId
+    }
+    return $s
 }
 
 Function Send-Get {
