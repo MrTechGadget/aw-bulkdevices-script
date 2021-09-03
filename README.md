@@ -74,6 +74,11 @@ userColumn parameter - Column title in CSV file containing UserId values.  This 
 EXAMPLE
   Set-CheckoutDevice.ps1 -file "Devices.csv" -deviceColumn "DeviceId" -userColumn "UserId"
   
+**Send-TextMessage.ps1** - Sends SMS message in AirWatch for a list of SerialNumbers
+
+**Get-ListOfTaggedDevices.ps1** - This script displays all tags in the Organization group, allowing the user to select a tag. 
+  All of the devices with that tag are exported to a CSV file named for that tag.
+  
 ## Compatibility
 
 These PowerShell scripts are PowerShell Core (PS 6+) compliant and were written with Visual Studio Code on a Mac. 

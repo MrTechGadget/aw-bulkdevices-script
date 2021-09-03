@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.10.0
+  Version:        2.11.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    07/30/2021
+  Update Date:    09/03/2021
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -193,8 +193,7 @@ Function Select-Platform {
     $platforms = @("Apple","Android","WindowsPc","AppleOsX","AppleTV","ChromeOS")
     $selection = $null
     $i=0
-    foreach($platform in $platforms)
-    {
+    foreach($platform in $platforms){
         Write-Host -ForegroundColor Cyan "  $($i+1)." $platform
         $i++
     }
@@ -209,14 +208,12 @@ Function Select-Tag {
 
     $selection = $null
     
-    Do
-    {
+    Do {
         $mhead
         Write-Host 
         $TagArr = @()
         $i=0
-        foreach($tag in $TagList.keys)
-        {
+        foreach($tag in $TagList.keys) {
             Write-Host -ForegroundColor Cyan "  $($i+1)." $tag
             $TagArr += $tag
             $i++
@@ -226,9 +223,32 @@ Function Select-Tag {
     
     } While ((-not $ans) -or (0 -gt $ans) -or ($TagList.Count -lt $ans))
     
-    $selection = $ans-1
+    $selection = $ans - 1
     $selectedTag = $TagArr[$selection]
-    return $TagList.$selectedTag
+    $tempOrg = $TagList.$selectedTag
+    return [string]$tempOrg
+}
+
+Function Select-ListItem {
+    Param([object]$List)
+
+    [int]$selection = $null
+    
+    Do {
+        $mhead
+        Write-Host 
+        $itemArr = @()
+        $i = 0
+        foreach ($item in $List.keys) {
+            Write-Host -ForegroundColor Cyan "  $($i+1)." $item
+            $itemArr += $item
+            $i++
+        }
+        Write-Host 
+        $ans = (Read-Host 'Please enter selection') -as [int]
+    } While ((-not $ans) -or (0 -gt $ans) -or ($List.Count -lt $ans))
+    $selection = $ans - 1
+    return $selection
 }
 
 Function Get-Device {
@@ -237,7 +257,7 @@ Function Get-Device {
     $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
     $endpointURL = "https://${airwatchServer}/api/mdm/devices/search?lastseen=${lastseen}&lgid=${lgid}&orderby=lastseen&sortorder=DESC&pagesize=${pageSize}"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
-    Write-Host "Total of $($webReturn.Total) devices match search, returning the first ${pageSize} results."
+    Write-Host "Total of $($webReturn.Total) devices match search, returning the first $($webReturn.PageSize) results."
     return $webReturn.Devices
 }
 
@@ -340,7 +360,7 @@ Function Send-Get {
         [string]$endpoint,
         [Parameter(HelpMessage="Version of API")]
         [string]$version = $version1
-        )
+    )
     $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
     try {
         $endpointURL = "https://${airwatchServer}/api/${endpoint}"
@@ -362,7 +382,7 @@ Function Send-Post {
         [string]$body,
         [Parameter(HelpMessage="Version of API")]
         [string]$version = $version1
-        )
+    )
     $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
     try {
         $endpointURL = "https://${airwatchServer}/api/${endpoint}"
@@ -384,7 +404,7 @@ Function Send-Put {
         [string]$body,
         [Parameter(HelpMessage="Version of API")]
         [string]$version = $version1
-        )
+    )
     $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
     try {
         $endpointURL = "https://${airwatchServer}/api/${endpoint}"
@@ -404,7 +424,7 @@ Function Send-Patch {
         [string]$endpoint,
         [Parameter(HelpMessage="Version of API")]
         [string]$version = $version1
-        )
+    )
     $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
     try {
         $endpointURL = "https://${airwatchServer}/api/${endpoint}"
@@ -424,7 +444,7 @@ Function Send-Delete {
         [string]$endpoint,
         [Parameter(HelpMessage="Version of API")]
         [string]$version = $version1
-        )
+    )
     $headers = Set-Header $restUserName $tenantAPIKey $version "application/json"
     try {
         $endpointURL = "https://${airwatchServer}/api/${endpoint}"
@@ -545,7 +565,8 @@ Function Install-App {
 
 }
 
-Function Unregister-DevicesEnterpriseWipe { # Enterprise Wipes List of devices by device id
+# Enterprise Wipes List of devices by device id
+Function Unregister-DevicesEnterpriseWipe {
     Param([string]$body)
     try {
         $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
@@ -560,7 +581,8 @@ Function Unregister-DevicesEnterpriseWipe { # Enterprise Wipes List of devices b
 
 }
 
-Function Unregister-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by device id
+# Enterprise Wipes List of devices by device id
+Function Unregister-DeviceEnterpriseWipe {
     Param([array]$devices)
     $body = ""
     $arr = @()
@@ -572,11 +594,11 @@ Function Unregister-DeviceEnterpriseWipe { # Enterprise Wipes List of devices by
                 $arr += $webReturn
             }
         }
-    catch {
-        $e = [int]$Error[0].Exception.Response.StatusCode
-        Write-Host "Error wiping device $deviceid. Status code $e. May not be any devices with that device id."
-        return $e
-    }
+        catch {
+            $e = [int]$Error[0].Exception.Response.StatusCode
+            Write-Host "Error wiping device $deviceid. Status code $e. May not be any devices with that device id."
+            return $e
+        }
     }
 
     return $arr
@@ -625,14 +647,14 @@ Function Set-DaysPrior {
     Param(
         [Parameter(HelpMessage="Maximum number of days since devices were last seen, default is 200")]
         [string]$maxLastSeen = "200"
-        )
+    )
     do {
         try {
             $numOk = $true
             [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and ${maxLastSeen})"
-            } # end try
+        } # end try
         catch {$numOK = $false}
-        } # end do 
+    } # end do 
     until (($days -ge 15 -and $days -le [int]$maxLastSeen) -and $numOK)
     return 0-$days
 }
@@ -685,7 +707,7 @@ Function Update-Devices {
 }
 
 Function Split-Array {
- <#  
+    <#  
   .SYNOPSIS   
     Split an array
   .NOTES
@@ -698,25 +720,25 @@ Function Split-Array {
    Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -size 3
  #> 
 
-  param($inArray,[int]$parts,[int]$size)
+    param($inArray,[int]$parts,[int]$size)
   
-  if ($parts) {
-    $PartSize = [Math]::Ceiling($inArray.count / $parts)
-  } 
-  if ($size) {
-    $PartSize = $size
-    $parts = [Math]::Ceiling($inArray.count / $size)
-  }
+    if ($parts) {
+        $PartSize = [Math]::Ceiling($inArray.count / $parts)
+    } 
+    if ($size) {
+        $PartSize = $size
+        $parts = [Math]::Ceiling($inArray.count / $size)
+    }
 
-  $outArray = New-Object 'System.Collections.Generic.List[psobject]'
+    $outArray = New-Object 'System.Collections.Generic.List[psobject]'
 
-  for ($i=1; $i -le $parts; $i++) {
-    $start = (($i-1)*$PartSize)
-    $end = (($i)*$PartSize) - 1
-    if ($end -ge $inArray.count) {$end = $inArray.count -1}
-	$outArray.Add(@($inArray[$start..$end]))
-  }
-  return ,$outArray
+    for ($i=1; $i -le $parts; $i++) {
+        $start = (($i-1)*$PartSize)
+        $end = (($i)*$PartSize) - 1
+        if ($end -ge $inArray.count) {$end = $inArray.count -1}
+        $outArray.Add(@($inArray[$start..$end]))
+    }
+    return ,$outArray
 
 }
 
