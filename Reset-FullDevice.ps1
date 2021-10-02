@@ -13,10 +13,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.3
+  Version:        1.4
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  10/02/2018
-  Update Date:    12/05/2019
+  Update Date:    10/02/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Reset-FullDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
@@ -35,14 +35,6 @@ Param(
 Import-Module .\PSairwatch.psm1
 
 $Logfile = "$PSScriptRoot\FullDeviceWipe.log"
-
-Function Write-Log
-{
-    Param ([string]$logstring)
-
-    $logstring = ((Get-Date).ToString() + " - " + $logstring)
-    Add-content $Logfile -value $logstring
-}
 
 $list = Read-File $file $fileColumn
 

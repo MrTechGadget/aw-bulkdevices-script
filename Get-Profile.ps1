@@ -12,10 +12,10 @@
 .OUTPUTS
   Outputs a CSV: "Profiles[today's date].csv"
 .NOTES
-  Version:        1.0
+  Version:        1.1
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/09/2021
-  Update Date:    01/09/2021
+  Update Date:    10/02/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Get-Profile.ps1 -query "status=Active&platform=Apple"
@@ -31,14 +31,6 @@ Param(
 Import-Module .\PSairwatch.psm1
 
 $Logfile = "$PSScriptRoot\Profiles.log"
-
-Function Write-Log
-{
-    Param ([string]$logstring)
-
-    $logstring = ((Get-Date).ToString() + " - " + $logstring)
-    Add-content $Logfile -value $logstring
-}
 
 Write-Log "$($MyInvocation.Line)"
 Write-Log "Getting Profiles in AirWatch"

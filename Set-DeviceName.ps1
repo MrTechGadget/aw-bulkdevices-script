@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.0
+  Version:        1.1
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/15/2020
-  Update Date:    01/15/2020
+  Update Date:    10/02/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Set-DeviceName.ps1 -file "Devices.csv" -fileColumn "SerialNumber" -deviceColumn "DeviceName"
@@ -39,14 +39,6 @@ Param(
 Import-Module .\PSairwatch.psm1
 
 $Logfile = "$PSScriptRoot\DeviceName.log"
-
-Function Write-Log
-{
-    Param ([string]$logstring)
-
-    $logstring = ((Get-Date).ToString() + " - " + $logstring)
-    Add-content $Logfile -value $logstring
-}
 
 $list = Read-FileWithData $file $fileColumn $deviceColumn
 

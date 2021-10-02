@@ -15,10 +15,10 @@
 .OUTPUTS
   Outputs a log of actions
 .NOTES
-  Version:        1.0
+  Version:        1.1
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  06/30/2021
-  Update Date:    06/30/2021
+  Update Date:    10/02/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Send-TextMessage.ps1 -file "Devices.csv" -fileColumn "SerialNumber" message "This is the message to be sent"
@@ -39,14 +39,6 @@ Param(
 Import-Module .\PSairwatch.psm1
 
 $Logfile = "$PSScriptRoot\TextMessage.log"
-
-Function Write-Log
-{
-    Param ([string]$logstring)
-
-    $logstring = ((Get-Date).ToString() + " - " + $logstring)
-    Add-content $Logfile -value $logstring
-}
 
 $list = Read-FileWithData $file $fileColumn
 
