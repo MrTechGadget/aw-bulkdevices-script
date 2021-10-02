@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.11.0
+  Version:        2.12.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    09/03/2021
+  Update Date:    10/02/2021
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -74,6 +74,14 @@ Function Set-Config {
     } until (Test-Path "AirWatchConfig.json")
     Start-Sleep -s 3
     Read-Config
+}
+
+Function Write-Log
+{
+    Param ([string]$logstring)
+
+    $logstring = ((Get-Date).ToString() + " - " + $logstring)
+    Add-content $Logfile -value $logstring
 }
 
 <#  This implementation uses Basic authentication. #>
