@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/08/2021
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Get-DeviceDetails.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
@@ -43,8 +43,8 @@ $Logfile = "$PSScriptRoot\DeviceDetails.log"
 
 $list = Read-File $file $fileColumn
 
-Write-Log "$($MyInvocation.Line)"
-Write-Log "Getting Device Details for $($list.count) devices in AirWatch"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
+Write-Log -logstring "Getting Device Details for $($list.count) devices in AirWatch" -logfile $Logfile
 $date = Get-Date -Format yyyyMMdd
 $endpointURL = "mdm/devices?searchBy=$searchBy"
 $DeviceJSON = Set-AddTagJSON $list
@@ -53,11 +53,11 @@ try {
     if ($results) {
         $results.Devices | Export-Csv -Path "DevicesDetails${date}.csv"
     } else {
-        Write-Log "No Results"
+        Write-Log -logstring "No Results" -logfile $Logfile
     }
 }
 catch {
-    Write-Log "Error (maybe no results)"
+    Write-Log -logstring "Error (maybe no results)" -logfile $Logfile
 }
 
 

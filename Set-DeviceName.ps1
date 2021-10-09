@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/15/2020
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Set-DeviceName.ps1 -file "Devices.csv" -fileColumn "SerialNumber" -deviceColumn "DeviceName"
@@ -42,7 +42,7 @@ $Logfile = "$PSScriptRoot\DeviceName.log"
 
 $list = Read-FileWithData $file $fileColumn $deviceColumn
 
-Write-Log "$($MyInvocation.Line)"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
 $decision = $Host.UI.PromptForChoice(
     "Attention! If you proceed, " + @($list).count + " devices will have their DeviceName overwritten in AirWatch",
@@ -50,7 +50,7 @@ $decision = $Host.UI.PromptForChoice(
     @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
-    Write-Log "Replacing DeviceName on $($list.count) devices in AirWatch"
+    Write-Log -logstring "Replacing DeviceName on $($list.count) devices in AirWatch" -logfile $Logfile
     $i = 0
     foreach ($item in $list) {
         $i++
@@ -63,20 +63,19 @@ if ($decision -eq 0) {
             if ($result -ne "") {
               $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
               Write-Warning ("Error Setting DeviceName: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
-              Write-Log ("Error Setting DeviceName: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
+              Write-Log -logstring ("Error Setting DeviceName: $($item.$fileColumn) : Error", $err.errorCode, $err.message) -logfile $Logfile
             } else {
                 Write-Host "$($item.$fileColumn) set to $($item.$deviceColumn) $result"
-                Write-Log "$($item.$fileColumn) set to $($item.$deviceColumn) $result"
+                Write-Log -logstring "$($item.$fileColumn) set to $($item.$deviceColumn) $result" -logfile $Logfile
             }
         }
         catch {
           $err2 = ($Error[0].ErrorDetails.Message)
           Write-Warning "Error Setting DeviceName: $($item.$fileColumn) to $($item.$deviceColumn) $err2"
-          Write-Log "Error Setting DeviceName: $($item.$fileColumn) to $($item.$deviceColumn) $err2"
+          Write-Log -logstring "Error Setting DeviceName: $($item.$fileColumn) to $($item.$deviceColumn) $err2" -logfile $Logfile
         }
     }
 } else {
     Write-Host "Action Cancelled"
-    Write-Log "Action Cancelled"
+    Write-Log -logstring "Action Cancelled" -logfile $Logfile
 }
-

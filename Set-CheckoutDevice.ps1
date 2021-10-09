@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/11/2021
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Set-CheckoutDevice.ps1 -file "Devices.csv" -deviceColumn "DeviceId" -userColumn "UserId"
@@ -41,7 +41,7 @@ $Logfile = "$PSScriptRoot\Checkout.log"
 
 $list = Read-FileWithData $file $deviceColumn $userColumn
 
-Write-Log "$($MyInvocation.Line)"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
 $decision = $Host.UI.PromptForChoice(
     "Attention! If you proceed, " + @($list).count + " devices will be assigned to the corresponding user identified in this file in AirWatch",
@@ -49,7 +49,7 @@ $decision = $Host.UI.PromptForChoice(
     @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
-    Write-Log "Assigning to users on $($list.count) devices in AirWatch"
+    Write-Log -logstring "Assigning to users on $($list.count) devices in AirWatch" -logfile $Logfile
     $i = 0
     foreach ($item in $list) {
         $i++
@@ -60,20 +60,19 @@ if ($decision -eq 0) {
             if ($result -ne "") {
               $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
               Write-Warning ("Error Assigning DeviceName: $($item.$deviceColumn) : Error", $err.errorCode, $err.message)
-              Write-Log ("Error Assigning DeviceName: $($item.$deviceColumn) : Error", $err.errorCode, $err.message)
+              Write-Log -logstring ("Error Assigning DeviceName: $($item.$deviceColumn) : Error", $err.errorCode, $err.message) -logfile $Logfile
             } else {
                 Write-Host "$($item.$deviceColumn) assigned to $($item.$userColumn) $result"
-                Write-Log "$($item.$deviceColumn) assigned to $($item.$userColumn) $result"
+                Write-Log -logstring "$($item.$deviceColumn) assigned to $($item.$userColumn) $result" -logfile $Logfile
             }
         }
         catch {
           $err2 = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
           Write-Warning "Error Assigning DeviceName: $($item.$deviceColumn) to $($item.$userColumn) $err2"
-          Write-Log "Error Assigning DeviceName: $($item.$deviceColumn) to $($item.$userColumn) $err2"
+          Write-Log -logstring "Error Assigning DeviceName: $($item.$deviceColumn) to $($item.$userColumn) $err2" -logfile $Logfile
         }
     }
 } else {
     Write-Host "Action Cancelled"
-    Write-Log "Action Cancelled"
+    Write-Log -logstring "Action Cancelled" -logfile $Logfile
 }
-

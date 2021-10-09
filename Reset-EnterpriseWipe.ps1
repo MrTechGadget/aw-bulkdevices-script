@@ -13,10 +13,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  12/28/2018
-  Updated Date:   10/02/2021
+  Updated Date:   10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Reset-EnterpriseDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
@@ -38,7 +38,7 @@ $Logfile = "$PSScriptRoot\EnterpriseWipe.log"
 
 $list = Read-File $file $fileColumn
 
-Write-Log "$($MyInvocation.Line)"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
 $decision = $Host.UI.PromptForChoice(
     "Attention! If you proceed, " + $list.count + " devices will be unenrolled from AirWatch",
@@ -46,7 +46,7 @@ $decision = $Host.UI.PromptForChoice(
     @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
-    Write-Log "Wiping $($list.count) devices unenrolled from AirWatch"
+    Write-Log -logstring "Wiping $($list.count) devices unenrolled from AirWatch" -logfile $Logfile
     $json = ' '
 
     foreach ($item in $list) {
@@ -56,22 +56,18 @@ if ($decision -eq 0) {
             $result = Send-Post -endpoint $endpointURL -body $json -version "application/json;version=1"
             if ($result -ne "") {
                 Write-Warning "Error Unenrolling Device: $item :$result"
-                Write-Log "Error Unenrolling Device: $item :$result"
+                Write-Log -logstring "Error Unenrolling Device: $item :$result" -logfile $Logfile
             } else {
                 Write-Host "$item Unenrolled $result"
-                Write-Log "$item Unenrolled $result"
+                Write-Log -logstring "$item Unenrolled $result" -logfile $Logfile
             }
         }
         catch {
             Write-Warning "Error Sending Unenroll Command: $item"
-            Write-Log "Error Sending Unenroll Command: $item"
+            Write-Log -logstring "Error Sending Unenroll Command: $item" -logfile $Logfile
         }
     }
 } else {
     Write-Host "Unenroll Cancelled"
-    Write-Log "Unenroll Cancelled"
+    Write-Log -logstring "Unenroll Cancelled" -logfile $Logfile
 }
-
-
-
-

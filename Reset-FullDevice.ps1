@@ -13,10 +13,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.4
+  Version:        1.5
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  10/02/2018
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Reset-FullDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
@@ -38,7 +38,7 @@ $Logfile = "$PSScriptRoot\FullDeviceWipe.log"
 
 $list = Read-File $file $fileColumn
 
-Write-Log "$($MyInvocation.Line)"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
 $decision = $Host.UI.PromptForChoice(
     "Attention! If you proceed, " + $list.count + " devices will be Device Wiped back to factory settings from AirWatch",
@@ -46,7 +46,7 @@ $decision = $Host.UI.PromptForChoice(
     @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
-    Write-Log "Wiping $($list.count) devices back to factory settings from AirWatch"
+    Write-Log -logstring "Wiping $($list.count) devices back to factory settings from AirWatch" -logfile $Logfile
     $json = '{
         "deviceWipe": {
           "disableActivationKey": true
@@ -66,32 +66,28 @@ if ($decision -eq 0) {
                 if ($result -ne "") {
                   $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
                   Write-Warning ("Error Wiping Device: $item : " + $err.errorCode + " " + $err.message)
-                  Write-Log ("Error Wiping Device: $item : " + $err.errorCode + " " + $err.message)
+                  Write-Log -logstring ("Error Wiping Device: $item : " + $err.errorCode + " " + $err.message) -logfile $Logfile
                 } else {
                   Write-Host "$item Wiped $result"
-                  Write-Log "$item Wiped $result"
+                  Write-Log -logstring "$item Wiped $result" -logfile $Logfile
                 }
               } else {
                 Write-Warning ("Error Wiping Device: $item : Error", $err.errorCode, $err.message)
-                Write-Log ("Error Wiping Device: $item : Error", $err.errorCode, $err.message)
+                Write-Log -logstring ("Error Wiping Device: $item : Error", $err.errorCode, $err.message) -logfile $Logfile
               }
                 
             } else {
                 Write-Host "$item Wiped $result"
-                Write-Log "$item Wiped $result"
+                Write-Log -logstring "$item Wiped $result" -logfile $Logfile
             }
         }
         catch {
           $err2 = ($Error[0].ErrorDetails.Message)
           Write-Warning "Error Sending Device Wipe Command: $item $err2"
-          Write-Log "Error Sending Device Wipe Command: $item $err2"
+          Write-Log -logstring "Error Sending Device Wipe Command: $item $err2" -logfile $Logfile
         }
     }
 } else {
     Write-Host "Deletion Cancelled"
-    Write-Log "Deletion Cancelled"
+    Write-Log -logstring "Deletion Cancelled" -logfile $Logfile
 }
-
-
-
-

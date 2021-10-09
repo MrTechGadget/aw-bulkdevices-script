@@ -12,10 +12,10 @@
 .OUTPUTS
   Outputs a CSV: "Profiles[today's date].csv"
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/09/2021
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Get-Profile.ps1 -query "status=Active&platform=Apple"
@@ -32,8 +32,8 @@ Import-Module .\PSairwatch.psm1
 
 $Logfile = "$PSScriptRoot\Profiles.log"
 
-Write-Log "$($MyInvocation.Line)"
-Write-Log "Getting Profiles in AirWatch"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
+Write-Log -logstring "Getting Profiles in AirWatch" -logfile $Logfile
 $date = Get-Date -Format yyyyMMdd
 if ($query) {
   $endpointURL = "mdm/profiles/search?$query"
@@ -41,16 +41,16 @@ if ($query) {
   $endpointURL = "mdm/profiles/search"
 }
 $results = Send-Get -endpoint $endpointURL -version "application/json;version=2"
+
 try {
-    if ($results) {
-        Write-Log "$($results.ProfileList.Length) Profiles returned out of $($results.TotalResults) total, writing csv."
-        $results.ProfileList | Export-Csv -Path "Profiles${date}.csv"
-    } else {
-        Write-Log "No Results"
-    }
+  if ($results) {
+    Write-Log -logstring "$($results.ProfileList.Length) Profiles returned out of $($results.TotalResults) total, writing csv." -logfile $Logfile
+  } else {
+    Write-Log -logstring "No Results" -logfile $Logfile
+  }
 }
 catch {
-    Write-Log "Error (maybe no results)  $_"
+  Write-Log -logstring "Error (maybe no results)  $_" -logfile $Logfile
 }
 
 
