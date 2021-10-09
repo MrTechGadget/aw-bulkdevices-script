@@ -13,10 +13,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  09/30/2020
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Invoke-RebootDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
@@ -38,7 +38,7 @@ $Logfile = "$PSScriptRoot\RebootDevice.log"
 
 $list = Read-FileWithData $file $fileColumn
 
-Write-Log "$($MyInvocation.Line)"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
 $decision = $Host.UI.PromptForChoice(
   "Attention! If you proceed, " + @($list).count + " devices will be rebooted",
@@ -46,7 +46,7 @@ $decision = $Host.UI.PromptForChoice(
   @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
-  Write-Log "Rebooting $($list.count) devices in AirWatch"
+  Write-Log -logstring "Rebooting $($list.count) devices in AirWatch" -logfile $Logfile
   $devices = @()
   foreach ($item in $list) {
     $devices += $item.$($fileColumn)
@@ -59,21 +59,21 @@ if ($decision -eq 0) {
     if ($result -eq "") {
       $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
       Write-Warning ("Error Rebooting Devices : Error", $err.errorCode, $err.message)
-      Write-Log ("Error Rebooting Devices : Error", $err.errorCode, $err.message)
+      Write-Log -logstring ("Error Rebooting Devices : Error", $err.errorCode, $err.message) -logfile $Logfile
     }
     else {
       Write-Host "$result"
-      Write-Log "$result"
+      Write-Log -logstring "$result" -logfile $Logfile
     }
   }
   catch {
     $err2 = ($Error[0].ErrorDetails.Message)
     Write-Warning "Error Rebooting Devices $err2"
-    Write-Log "Error Rebooting Devices $err2"
+    Write-Log -logstring "Error Rebooting Devices $err2" -logfile $Logfile
   }
 }
 else {
   Write-Host "Action Cancelled"
-  Write-Log "Action Cancelled"
+  Write-Log -logstring "Action Cancelled" -logfile $Logfile
 }
 

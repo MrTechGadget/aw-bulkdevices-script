@@ -16,11 +16,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.12.0
+  Version:        2.12.1
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -78,10 +78,13 @@ Function Set-Config {
 
 Function Write-Log
 {
-    Param ([string]$logstring)
+    Param (
+        [string]$logstring,
+        [string]$Logfile = "PSairwatch.log"
+    )
 
     $logstring = ((Get-Date).ToString() + " - " + $logstring)
-    Add-content $Logfile -value $logstring
+    Add-content $logfile -value $logstring
 }
 
 <#  This implementation uses Basic authentication. #>

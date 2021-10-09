@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.4
+  Version:        1.5
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/14/2020
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Set-AssetNumber.ps1 -file "Devices.csv" -fileColumn "SerialNumber" -assetColumn "AssetNumber"
@@ -42,7 +42,7 @@ $Logfile = "$PSScriptRoot\AssetNumber.log"
 
 $list = Read-FileWithData $file $fileColumn $assetColumn
 
-Write-Log "$($MyInvocation.Line)"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
 $decision = $Host.UI.PromptForChoice(
     "Attention! If you proceed, " + @($list).count + " devices will have their AssetNumber overwritten in AirWatch",
@@ -50,7 +50,7 @@ $decision = $Host.UI.PromptForChoice(
     @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
-    Write-Log "Replacing asset numbers on $($list.count) devices in AirWatch"
+    Write-Log -logstring "Replacing asset numbers on $($list.count) devices in AirWatch" -logfile $Logfile
     $i = 0
     foreach ($item in $list) {
         $i++
@@ -62,20 +62,19 @@ if ($decision -eq 0) {
             if ($result -ne "") {
               $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
               Write-Warning ("Error Setting AssetNumber: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
-              Write-Log ("Error Setting AssetNumber: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
+              Write-Log -logstring ("Error Setting AssetNumber: $($item.$fileColumn) : Error", $err.errorCode, $err.message) -logfile $Logfile
             } else {
                 Write-Host "$($item.$fileColumn) set to $($item.$assetColumn) $result"
-                Write-Log "$($item.$fileColumn) set to $($item.$assetColumn) $result"
+                Write-Log -logstring "$($item.$fileColumn) set to $($item.$assetColumn) $result" -logfile $Logfile
             }
         }
         catch {
           $err2 = ($Error[0].ErrorDetails.Message)
           Write-Warning "Error Setting AssetNumber: $($item.$fileColumn) to $($item.$assetColumn) $err2"
-          Write-Log "Error Setting AssetNumber: $($item.$fileColumn) to $($item.$assetColumn) $err2"
+          Write-Log -logstring "Error Setting AssetNumber: $($item.$fileColumn) to $($item.$assetColumn) $err2" -logfile $Logfile
         }
     }
 } else {
     Write-Host "Action Cancelled"
-    Write-Log "Action Cancelled"
+    Write-Log -logstring "Action Cancelled" -logfile $Logfile
 }
-

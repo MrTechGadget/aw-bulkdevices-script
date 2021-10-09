@@ -15,10 +15,10 @@
 .OUTPUTS
   Outputs a log of actions
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  06/30/2021
-  Update Date:    10/02/2021
+  Update Date:    10/08/2021
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Send-TextMessage.ps1 -file "Devices.csv" -fileColumn "SerialNumber" message "This is the message to be sent"
@@ -42,7 +42,7 @@ $Logfile = "$PSScriptRoot\TextMessage.log"
 
 $list = Read-FileWithData $file $fileColumn
 
-Write-Log "$($MyInvocation.Line)"
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
 $decision = $Host.UI.PromptForChoice(
     "Attention! If you proceed, " + @($list).count + " devices will be sent this text message through AirWatch: $message",
@@ -50,7 +50,7 @@ $decision = $Host.UI.PromptForChoice(
     @('&Yes', '&No'), 1)
 
 if ($decision -eq 0) {
-    Write-Log "Sending SMS to $($list.count) devices in AirWatch"
+    Write-Log -logstring "Sending SMS to $($list.count) devices in AirWatch" -logfile $Logfile
     $i = 0
     foreach ($item in $list) {
         $i++
@@ -62,20 +62,20 @@ if ($decision -eq 0) {
             if ($result -ne "") {
               $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
               Write-Warning ("Error Sending SMS: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
-              Write-Log ("Error Sending SMS: $($item.$fileColumn) : Error", $err.errorCode, $err.message)
+              Write-Log -logstring ("Error Sending SMS: $($item.$fileColumn) : Error", $err.errorCode, $err.message) -logfile $Logfile
             } else {
                 Write-Host "$($item.$fileColumn) sent $message. $result"
-                Write-Log "$($item.$fileColumn) sent $message. $result"
+                Write-Log -logstring "$($item.$fileColumn) sent $message. $result" -logfile $Logfile
             }
         }
         catch {
           $err2 = ($Error[0].ErrorDetails.Message)
           Write-Warning "Error Sending SMS: $($item.$fileColumn) to $($item.$assetColumn) $err2"
-          Write-Log "Error Sending SMS: $($item.$fileColumn) to $($item.$assetColumn) $err2"
+          Write-Log -logstring "Error Sending SMS: $($item.$fileColumn) to $($item.$assetColumn) $err2" -logfile $Logfile
         }
     }
 } else {
     Write-Host "Action Cancelled"
-    Write-Log "Action Cancelled"
+    Write-Log -logstring "Action Cancelled" -logfile $Logfile
 }
 
