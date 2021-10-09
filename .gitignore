@@ -2,3 +2,4 @@
 # http://git-scm.com/docs/gitignore
 
 AirWatchConfig.json
+*.csv
