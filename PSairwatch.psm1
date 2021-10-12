@@ -4,13 +4,11 @@
 .DESCRIPTION
   Module for interacting with AirWatch via various REST APIs
   Use the following to include module in your script
-  
+
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
     Set-Location $ScriptPath
     Import-Module .\PSairwatch.psm1
 
-.PARAMETER <Parameter_Name>
-    <Brief description of parameter input required. Repeat this attribute if required>
 .INPUTS
   AirWatchConfig.json
 .OUTPUTS
@@ -21,7 +19,7 @@
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
   Update Date:    10/08/2021
-  
+
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
     Set-Location $ScriptPath
