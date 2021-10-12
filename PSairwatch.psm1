@@ -253,29 +253,19 @@ Function Get-Device {
 
 <#  This function builds the JSON to add the tag to all of the devices. #>
 Function Set-AddTagJSON {
-
     Param([Array]$items)
     
     Write-Verbose("------------------------------")
     Write-Verbose("Building JSON to Post")
-    
-    $arrayLength = $items.Count
-    $counter = 0
-    $quoteCharacter = [char]34
 
-    $addTagJSON = "{ " + $quoteCharacter + "BulkValues" + $quoteCharacter + " : { " + $quoteCharacter + "Value" + $quoteCharacter + " : [ "
-    foreach ($item in $items) {
-        $itemString = Out-String -InputObject $item
-        $itemString = $itemString.Trim()
-    
-        $counter = $counter + 1
-        if ($counter -lt $arrayLength) {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $itemString + $quoteCharacter + ", "
-        } else {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $itemString + $quoteCharacter
+    $addTagJSON = @{
+        'BulkValues' = @{
+            'Value' = @(
+                $items | ForEach-Object -MemberName ToString | ForEach-Object -MemberName Trim
+            )
         }
     }
-    $addTagJSON = $addTagJSON + " ] } }"
+    $addTagJSON = ConvertTo-Json -InputObject $addTagJSON -Compress
     
     Write-Verbose($addTagJSON)
     Write-Verbose("------------------------------")
