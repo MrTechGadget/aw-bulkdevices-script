@@ -241,28 +241,6 @@ Function Select-Tag {
     return [string]$tempOrg
 }
 
-Function Select-ListItem {
-    Param([object]$List)
-
-    [int]$selection = $null
-    
-    Do {
-        $mhead
-        Write-Host 
-        $itemArr = @()
-        $i = 0
-        foreach ($item in $List.keys) {
-            Write-Host -ForegroundColor Cyan "  $($i+1)." $item
-            $itemArr += $item
-            $i++
-        }
-        Write-Host 
-        $ans = (Read-Host 'Please enter selection') -as [int]
-    } While ((-not $ans) -or (0 -gt $ans) -or ($List.Count -lt $ans))
-    $selection = $ans - 1
-    return $selection
-}
-
 Function Get-Device {
     Param([string]$lastseen, [string]$lgid, [string]$pageSize = "500")
 
