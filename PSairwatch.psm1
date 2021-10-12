@@ -618,38 +618,30 @@ Function Set-LastSeenDate {
 Function Update-Devices {
     Param([array]$devices, $ProfileSelected)
     $body = ""
-    $quoteCharacter = [char]34
+    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/${ProfileSelected}/install"
+
     foreach ($deviceid in $devices) {
+        $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
         try {
-            $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
             $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers 
             if ($webReturn) {
                 $r = $webReturn.DeviceProfiles | Where-Object { $_.Id.Value -eq $ProfileSelected}
-                if ($r.Status -eq 1) {
-                    $devid = $webReturn.DeviceId.Id.Value
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
-                    $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
+                $devid = $webReturn.DeviceId.Id.Value
+                $body = ConvertTo-Json -InputObject @{'SerialNumber' = $deviceid} -Compress
+                if ($r.Status -in 0, 1) {
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host $devid  "  install queued   " + $webReturn2
-                } elseif ($r.Status -eq 0) {
-                    $devid = $webReturn.DeviceId.Id.Value
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
-                    $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
-                    $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host $devid  "  install queued   " + $webReturn2
+                    Write-Host "${devid}  install queued   ${webReturn2}"
                 } elseif ($r.Status -eq 3) {
-                    Write-Host $webReturn.DeviceId.Id.Value profile already installed.
+                    Write-Host "$($webReturn.DeviceId.Id.Value) profile already installed."
                 } elseif ($r.Status -eq 6) {
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
-                    $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host $devid  "  Previous Error, install queued   " + $webReturn2
+                    Write-Host "${devid}  Previous Error, install queued   ${webReturn2}"
                 }
             }
         }
         catch {
             $e = [int]$Error[0].Exception.Response.StatusCode
-            Write-Host "Error with device $deviceid. Status code $e. May not be any devices with that serial."
+            Write-Host "Error with device ${deviceid}. Status code ${e}. May not be any devices with that serial."
         }
     }
 }
