@@ -274,38 +274,6 @@ Function Set-AddTagJSON {
     Return $addTagJSON
 }
 
-Function Set-DeviceIdJSON {
-    
-    Param([Array]$deviceList,[string]$idType)
-    
-    Write-Verbose("------------------------------")
-    Write-Verbose("Building JSON to Post")
-    
-    $arrayLength = $deviceList.Count
-    $counter = 0
-    $quoteCharacter = [char]34
-
-    $addJSON = "{ "
-    foreach ($currentDeviceID in $deviceList) {
-        $deviceIDString = Out-String -InputObject $currentDeviceID
-        $deviceIDString = $deviceIDString.Trim()
-    
-        $counter = $counter + 1
-        if ($counter -lt $arrayLength) {
-            $addJSON = $addJSON + $quoteCharacter + $idType + $quoteCharacter + " : " + $deviceIDString + ", "
-        } else {
-            $addJSON = $addJSON + $quoteCharacter + $idType + $quoteCharacter + " : " + $deviceIDString
-        }
-    }
-    $addJSON = $addJSON + " }"
-    
-    Write-Verbose($addJSON)
-    Write-Verbose("------------------------------")
-    Write-Verbose("")
-        
-    Return $addJSON
-}
-
 Function Get-DeviceDetails {
     Param([string]$addTagJSON)
     try {
