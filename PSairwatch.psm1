@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Module for interacting with AirWatch via various REST APIs
 .DESCRIPTION
@@ -64,15 +64,16 @@ Function Set-Config {
     $apihost = Read-Host "Enter FQDN of API server, do not include protocol or path"
     $awtenantcode = Read-Host "Enter API Key"
     $groupid = Read-Host "Enter Group ID (numerical value)"
-    $configuration = @{}
-    $configuration.Add("groupid", $groupid)
-    $configuration.Add("awtenantcode", $awtenantcode)
-    $configuration.Add("host", $apihost)
-    ConvertTo-Json -InputObject $configuration > ./AirWatchConfig.json
+    $configuration = @{
+        'groupid'      = $groupid
+        'awtenantcode' = $awtenantcode
+        'host'         = $apihost
+    }
+    ConvertTo-Json -InputObject $configuration | Set-Content -LiteralPath 'AirWatchConfig.json' -Force
     do {
-        Start-Sleep -s 1
+        Start-Sleep -Seconds 1
     } until (Test-Path "AirWatchConfig.json")
-    Start-Sleep -s 3
+    Start-Sleep -Seconds 3
     Read-Config
 }
 
