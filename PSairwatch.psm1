@@ -6,7 +6,7 @@
   Use the following to include module in your script
   
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
-    Set-Location $ScriptPath 
+    Set-Location $ScriptPath
     Import-Module .\PSairwatch.psm1
 
 .PARAMETER <Parameter_Name>
@@ -24,7 +24,7 @@
   
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
-    Set-Location $ScriptPath 
+    Set-Location $ScriptPath
     Import-Module .\PSairwatch.psm1
 #>
 
@@ -121,7 +121,7 @@ Function Read-File {
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
         Write-Host "      No $file file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-    }   
+    }
 }
 
 Function Read-FileWithData {
@@ -140,7 +140,7 @@ Function Read-FileWithData {
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
         Write-Host "      No $file file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-    }   
+    }
 }
 
 Function Set-Header {
@@ -222,7 +222,7 @@ Function Select-Tag {
     
     Do {
         $mhead
-        Write-Host 
+        Write-Host
         $TagArr = @()
         $i=0
         foreach($tag in $TagList.keys) {
@@ -230,7 +230,7 @@ Function Select-Tag {
             $TagArr += $tag
             $i++
         }
-        Write-Host 
+        Write-Host
         $ans = (Read-Host 'Please enter selection') -as [int]
     
     } While ((-not $ans) -or (0 -gt $ans) -or ($TagList.Count -lt $ans))
@@ -480,25 +480,25 @@ Function Set-DeviceIdListSupervision {
     return $s
 }
 
-Function Install-PublicApp { 
+Function Install-PublicApp {
     Param([string]$addJSON,[string]$appId)
     $appType = "public"
     Install-App($addJSON, $appId, $appType)
 }
 
-Function Install-InternalApp { 
+Function Install-InternalApp {
     Param([string]$addJSON,[string]$appId)
     $appType = "internal"
     Install-App($addJSON, $appId, $appType)
 }
 
-Function Install-PurchasedApp { 
+Function Install-PurchasedApp {
     Param([string]$addJSON,[string]$appId)
     $appType = "purchased"
     Install-App($addJSON, $appId, $appType)
 }
 
-Function Install-App { 
+Function Install-App {
     Param([string]$addJSON,[string]$appId,[string]$appType)
     try {
         $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
@@ -602,7 +602,7 @@ Function Set-DaysPrior {
             [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and ${maxLastSeen})"
         } # end try
         catch {$numOK = $false}
-    } # end do 
+    } # end do
     until (($days -ge 15 -and $days -le [int]$maxLastSeen) -and $numOK)
     return 0-$days
 }
@@ -623,7 +623,7 @@ Function Update-Devices {
     foreach ($deviceid in $devices) {
         $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
         try {
-            $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers 
+            $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
             if ($webReturn) {
                 $r = $webReturn.DeviceProfiles | Where-Object { $_.Id.Value -eq $ProfileSelected}
                 $devid = $webReturn.DeviceId.Id.Value
@@ -647,24 +647,24 @@ Function Update-Devices {
 }
 
 Function Split-Array {
-    <#  
-  .SYNOPSIS   
-    Split an array
-  .NOTES
-    Version : July 2, 2017 - implemented suggestions from ShadowSHarmon for performance   
-  .PARAMETER inArray
-   A one dimensional array you want to split
-  .EXAMPLE  
-   Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -parts 3
-  .EXAMPLE  
-   Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -size 3
- #> 
+    <#
+      .SYNOPSIS
+        Split an array
+      .NOTES
+        Version : July 2, 2017 - implemented suggestions from ShadowSHarmon for performance
+      .PARAMETER inArray
+       A one dimensional array you want to split
+      .EXAMPLE
+       Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -parts 3
+      .EXAMPLE
+       Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -size 3
+    #>
 
     param($inArray,[int]$parts,[int]$size)
-  
+
     if ($parts) {
         $PartSize = [Math]::Ceiling($inArray.count / $parts)
-    } 
+    }
     if ($size) {
         $PartSize = $size
         $parts = [Math]::Ceiling($inArray.count / $size)
@@ -678,8 +678,8 @@ Function Split-Array {
         if ($end -ge $inArray.count) {$end = $inArray.count -1}
         $outArray.Add(@($inArray[$start..$end]))
     }
-    return ,$outArray
 
+    return ,$outArray
 }
 
 <# Set configurations #>
