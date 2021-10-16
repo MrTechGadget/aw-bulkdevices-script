@@ -1,16 +1,14 @@
-<#
+﻿<#
 .SYNOPSIS
   Module for interacting with AirWatch via various REST APIs
 .DESCRIPTION
   Module for interacting with AirWatch via various REST APIs
   Use the following to include module in your script
-  
+
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
-    Set-Location $ScriptPath 
+    Set-Location $ScriptPath
     Import-Module .\PSairwatch.psm1
 
-.PARAMETER <Parameter_Name>
-    <Brief description of parameter input required. Repeat this attribute if required>
 .INPUTS
   AirWatchConfig.json
 .OUTPUTS
@@ -21,10 +19,10 @@
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
   Update Date:    10/08/2021
-  
+
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
-    Set-Location $ScriptPath 
+    Set-Location $ScriptPath
     Import-Module .\PSairwatch.psm1
 #>
 
@@ -64,15 +62,16 @@ Function Set-Config {
     $apihost = Read-Host "Enter FQDN of API server, do not include protocol or path"
     $awtenantcode = Read-Host "Enter API Key"
     $groupid = Read-Host "Enter Group ID (numerical value)"
-    $configuration = @{}
-    $configuration.Add("groupid", $groupid)
-    $configuration.Add("awtenantcode", $awtenantcode)
-    $configuration.Add("host", $apihost)
-    ConvertTo-Json -InputObject $configuration > ./AirWatchConfig.json
+    $configuration = @{
+        'groupid'      = $groupid
+        'awtenantcode' = $awtenantcode
+        'host'         = $apihost
+    }
+    ConvertTo-Json -InputObject $configuration | Set-Content -LiteralPath 'AirWatchConfig.json' -Force
     do {
-        Start-Sleep -s 1
+        Start-Sleep -Seconds 1
     } until (Test-Path "AirWatchConfig.json")
-    Start-Sleep -s 3
+    Start-Sleep -Seconds 3
     Read-Config
 }
 
@@ -120,7 +119,7 @@ Function Read-File {
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
         Write-Host "      No $file file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-    }   
+    }
 }
 
 Function Read-FileWithData {
@@ -139,7 +138,7 @@ Function Read-FileWithData {
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
         Write-Host "      No $file file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
         Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-    }   
+    }
 }
 
 Function Set-Header {
@@ -221,7 +220,7 @@ Function Select-Tag {
     
     Do {
         $mhead
-        Write-Host 
+        Write-Host
         $TagArr = @()
         $i=0
         foreach($tag in $TagList.keys) {
@@ -229,7 +228,7 @@ Function Select-Tag {
             $TagArr += $tag
             $i++
         }
-        Write-Host 
+        Write-Host
         $ans = (Read-Host 'Please enter selection') -as [int]
     
     } While ((-not $ans) -or (0 -gt $ans) -or ($TagList.Count -lt $ans))
@@ -238,28 +237,6 @@ Function Select-Tag {
     $selectedTag = $TagArr[$selection]
     $tempOrg = $TagList.$selectedTag
     return [string]$tempOrg
-}
-
-Function Select-ListItem {
-    Param([object]$List)
-
-    [int]$selection = $null
-    
-    Do {
-        $mhead
-        Write-Host 
-        $itemArr = @()
-        $i = 0
-        foreach ($item in $List.keys) {
-            Write-Host -ForegroundColor Cyan "  $($i+1)." $item
-            $itemArr += $item
-            $i++
-        }
-        Write-Host 
-        $ans = (Read-Host 'Please enter selection') -as [int]
-    } While ((-not $ans) -or (0 -gt $ans) -or ($List.Count -lt $ans))
-    $selection = $ans - 1
-    return $selection
 }
 
 Function Get-Device {
@@ -274,67 +251,25 @@ Function Get-Device {
 
 <#  This function builds the JSON to add the tag to all of the devices. #>
 Function Set-AddTagJSON {
-
     Param([Array]$items)
     
     Write-Verbose("------------------------------")
     Write-Verbose("Building JSON to Post")
-    
-    $arrayLength = $items.Count
-    $counter = 0
-    $quoteCharacter = [char]34
 
-    $addTagJSON = "{ " + $quoteCharacter + "BulkValues" + $quoteCharacter + " : { " + $quoteCharacter + "Value" + $quoteCharacter + " : [ "
-    foreach ($item in $items) {
-        $itemString = Out-String -InputObject $item
-        $itemString = $itemString.Trim()
-    
-        $counter = $counter + 1
-        if ($counter -lt $arrayLength) {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $itemString + $quoteCharacter + ", "
-        } else {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $itemString + $quoteCharacter
+    $addTagJSON = @{
+        'BulkValues' = @{
+            'Value' = @(
+                $items | ForEach-Object -MemberName ToString | ForEach-Object -MemberName Trim
+            )
         }
     }
-    $addTagJSON = $addTagJSON + " ] } }"
+    $addTagJSON = ConvertTo-Json -InputObject $addTagJSON -Compress
     
     Write-Verbose($addTagJSON)
     Write-Verbose("------------------------------")
     Write-Verbose("")
         
     Return $addTagJSON
-}
-
-Function Set-DeviceIdJSON {
-    
-    Param([Array]$deviceList,[string]$idType)
-    
-    Write-Verbose("------------------------------")
-    Write-Verbose("Building JSON to Post")
-    
-    $arrayLength = $deviceList.Count
-    $counter = 0
-    $quoteCharacter = [char]34
-
-    $addJSON = "{ "
-    foreach ($currentDeviceID in $deviceList) {
-        $deviceIDString = Out-String -InputObject $currentDeviceID
-        $deviceIDString = $deviceIDString.Trim()
-    
-        $counter = $counter + 1
-        if ($counter -lt $arrayLength) {
-            $addJSON = $addJSON + $quoteCharacter + $idType + $quoteCharacter + " : " + $deviceIDString + ", "
-        } else {
-            $addJSON = $addJSON + $quoteCharacter + $idType + $quoteCharacter + " : " + $deviceIDString
-        }
-    }
-    $addJSON = $addJSON + " }"
-    
-    Write-Verbose($addJSON)
-    Write-Verbose("------------------------------")
-    Write-Verbose("")
-        
-    Return $addJSON
 }
 
 Function Get-DeviceDetails {
@@ -543,25 +478,25 @@ Function Set-DeviceIdListSupervision {
     return $s
 }
 
-Function Install-PublicApp { 
+Function Install-PublicApp {
     Param([string]$addJSON,[string]$appId)
     $appType = "public"
     Install-App($addJSON, $appId, $appType)
 }
 
-Function Install-InternalApp { 
+Function Install-InternalApp {
     Param([string]$addJSON,[string]$appId)
     $appType = "internal"
     Install-App($addJSON, $appId, $appType)
 }
 
-Function Install-PurchasedApp { 
+Function Install-PurchasedApp {
     Param([string]$addJSON,[string]$appId)
     $appType = "purchased"
     Install-App($addJSON, $appId, $appType)
 }
 
-Function Install-App { 
+Function Install-App {
     Param([string]$addJSON,[string]$appId,[string]$appType)
     try {
         $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
@@ -665,7 +600,7 @@ Function Set-DaysPrior {
             [int]$days = Read-Host -Prompt "Input how many days since the devices were last seen. (Between 15 and ${maxLastSeen})"
         } # end try
         catch {$numOK = $false}
-    } # end do 
+    } # end do
     until (($days -ge 15 -and $days -le [int]$maxLastSeen) -and $numOK)
     return 0-$days
 }
@@ -681,61 +616,53 @@ Function Set-LastSeenDate {
 Function Update-Devices {
     Param([array]$devices, $ProfileSelected)
     $body = ""
-    $quoteCharacter = [char]34
+    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/${ProfileSelected}/install"
+
     foreach ($deviceid in $devices) {
+        $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
         try {
-            $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
-            $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers 
+            $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
             if ($webReturn) {
                 $r = $webReturn.DeviceProfiles | Where-Object { $_.Id.Value -eq $ProfileSelected}
-                if ($r.Status -eq 1) {
-                    $devid = $webReturn.DeviceId.Id.Value
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
-                    $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
+                $devid = $webReturn.DeviceId.Id.Value
+                $body = ConvertTo-Json -InputObject @{'SerialNumber' = $deviceid} -Compress
+                if ($r.Status -in 0, 1) {
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host $devid  "  install queued   " + $webReturn2
-                } elseif ($r.Status -eq 0) {
-                    $devid = $webReturn.DeviceId.Id.Value
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
-                    $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
-                    $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host $devid  "  install queued   " + $webReturn2
+                    Write-Host "${devid}  install queued   ${webReturn2}"
                 } elseif ($r.Status -eq 3) {
-                    Write-Host $webReturn.DeviceId.Id.Value profile already installed.
+                    Write-Host "$($webReturn.DeviceId.Id.Value) profile already installed."
                 } elseif ($r.Status -eq 6) {
-                    $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/$ProfileSelected/install"
-                    $body = "{ " + $quoteCharacter + "SerialNumber" + $quoteCharacter + " : " + $quoteCharacter + $deviceid + $quoteCharacter +" }"
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host $devid  "  Previous Error, install queued   " + $webReturn2
+                    Write-Host "${devid}  Previous Error, install queued   ${webReturn2}"
                 }
             }
         }
         catch {
             $e = [int]$Error[0].Exception.Response.StatusCode
-            Write-Host "Error with device $deviceid. Status code $e. May not be any devices with that serial."
+            Write-Host "Error with device ${deviceid}. Status code ${e}. May not be any devices with that serial."
         }
     }
 }
 
 Function Split-Array {
-    <#  
-  .SYNOPSIS   
-    Split an array
-  .NOTES
-    Version : July 2, 2017 - implemented suggestions from ShadowSHarmon for performance   
-  .PARAMETER inArray
-   A one dimensional array you want to split
-  .EXAMPLE  
-   Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -parts 3
-  .EXAMPLE  
-   Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -size 3
- #> 
+    <#
+      .SYNOPSIS
+        Split an array
+      .NOTES
+        Version : July 2, 2017 - implemented suggestions from ShadowSHarmon for performance
+      .PARAMETER inArray
+       A one dimensional array you want to split
+      .EXAMPLE
+       Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -parts 3
+      .EXAMPLE
+       Split-Array -inArray @(1,2,3,4,5,6,7,8,9,10) -size 3
+    #>
 
     param($inArray,[int]$parts,[int]$size)
-  
+
     if ($parts) {
         $PartSize = [Math]::Ceiling($inArray.count / $parts)
-    } 
+    }
     if ($size) {
         $PartSize = $size
         $parts = [Math]::Ceiling($inArray.count / $size)
@@ -749,8 +676,8 @@ Function Split-Array {
         if ($end -ge $inArray.count) {$end = $inArray.count -1}
         $outArray.Add(@($inArray[$start..$end]))
     }
-    return ,$outArray
 
+    return ,$outArray
 }
 
 <# Set configurations #>
