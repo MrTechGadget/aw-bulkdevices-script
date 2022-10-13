@@ -11,10 +11,10 @@
 .OUTPUTS
   Outputs a CSV file with Devices that have not been seen in X number of days that have been deleted.
 .NOTES
-  Version:        1.7
+  Version:        1.8
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  09/15/2017
-  Last Updated:   11/14/2019
+  Last Updated:   10/13/2022
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   Delete-StaleDevices.ps1 -pageSize 1000 -maxLastSeen 250
@@ -29,7 +29,7 @@ Param(
 )
 
 Import-Module .\PSairwatch.psm1
-
+Write-Log -logstring "$($MyInvocation.Line)"
 
 $OrgGroups = Get-OrgGroups
 $GroupID = Select-Tag $OrgGroups

@@ -13,10 +13,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.1
+  Version:        1.3
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  07/02/2018
-  Update Date:    12/28/2018
+  Update Date:    10/13/2022
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Delete-User.ps1 -userFile "User.csv" -userFileColumn "Id.Value"
@@ -33,6 +33,8 @@ Param(
 )
 
 Import-Module .\PSairwatch.psm1
+Write-Log -logstring "$($MyInvocation.Line)"
+
 $batchsize = 50
 $userList = Read-File $userFile $userFileColumn
 $splitUserList = Split-Array -inArray $userList -size $batchsize

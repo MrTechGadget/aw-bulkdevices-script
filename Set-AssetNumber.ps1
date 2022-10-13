@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.5
+  Version:        1.6
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/14/2020
-  Update Date:    10/08/2021
+  Update Date:    10/13/2022
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Set-AssetNumber.ps1 -file "Devices.csv" -fileColumn "SerialNumber" -assetColumn "AssetNumber"
@@ -37,6 +37,7 @@ Param(
 )
 
 Import-Module .\PSairwatch.psm1
+Write-Log -logstring "$($MyInvocation.Line)"
 
 $Logfile = "$PSScriptRoot\AssetNumber.log"
 

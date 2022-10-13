@@ -10,11 +10,11 @@
 .OUTPUTS
   Outputs a CSV file with Devices that have not been seen in X number of days.
 .NOTES
-  Version:        1.3
-  Author:         Joshua Clark @audioeng
+  Version:        1.4
+  Author:         Joshua Clark @MrTechGadget
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  09/15/2017
-  Last Update:    11/14/2019
+  Last Update:    10/13/2022
 .EXAMPLE
   Get-ListOfStaleDevices.ps1 -pageSize 1000 -maxLastSeen 250
 #>
@@ -28,6 +28,7 @@ Param(
 )
 
 Import-Module .\PSairwatch.psm1
+Write-Log -logstring "$($MyInvocation.Line)"
 
 Function Set-DeviceIdList {
   Param([object]$Devices)
