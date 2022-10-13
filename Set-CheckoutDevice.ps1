@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.2
+  Version:        1.3
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/11/2021
-  Update Date:    10/08/2021
+  Update Date:    10/13/2022
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Set-CheckoutDevice.ps1 -file "Devices.csv" -deviceColumn "DeviceId" -userColumn "UserId"
@@ -36,6 +36,7 @@ Param(
 )
 
 Import-Module .\PSairwatch.psm1
+Write-Log -logstring "$($MyInvocation.Line)"
 
 $Logfile = "$PSScriptRoot\Checkout.log"
 

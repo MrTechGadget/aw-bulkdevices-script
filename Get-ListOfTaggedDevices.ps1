@@ -24,10 +24,10 @@
 .OUTPUTS
   Outputs a CSV file with Devices that have the selected tag.
 .NOTES
-  Version:        1.4
+  Version:        1.5
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  09/06/2017
-  Update Date:    07/30/2021
+  Update Date:    10/13/2022
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
   
 .EXAMPLE
@@ -35,6 +35,7 @@
 #>
 
 Import-Module .\PSairwatch.psm1
+Write-Log -logstring "$($MyInvocation.Line)"
 
 <# Start of Script #>
 $TagList = Get-Tags

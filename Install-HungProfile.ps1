@@ -9,10 +9,11 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.3
-  Author:         Joshua Clark @audioeng
+  Version:        1.4
+  Author:         Joshua Clark @MrTechGadget
   Creation Date:  10/8/2019
-  Site:           https://github.com/audioeng/aw-bulkdevices-script
+  Update Date:    10/13/2022
+  Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   Install-HungProfile.ps1 -serialFile .\Serials.csv
 #>
@@ -27,6 +28,7 @@ Param(
 )
 
 Import-Module .\PSairwatch.psm1
+Write-Log -logstring "$($MyInvocation.Line)"
 
 <#
 Start of Script
