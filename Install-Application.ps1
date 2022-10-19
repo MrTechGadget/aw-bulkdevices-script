@@ -12,7 +12,7 @@
   Version:        1.3
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  4/20/2021
-  Update Date:    10/13/2022
+  Update Date:    10/19/2022
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   Install-Application.ps1 -file .\Devices.csv -fileColumn "device_id" -appId "12345" -appType "purchased"
