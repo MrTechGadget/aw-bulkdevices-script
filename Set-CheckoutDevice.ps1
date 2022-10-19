@@ -15,10 +15,10 @@
 .OUTPUTS
   NO OUTPUT CURRENTLY:Outputs a CSV log of actions
 .NOTES
-  Version:        1.3
+  Version:        1.4
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/11/2021
-  Update Date:    10/13/2022
+  Update Date:    10/19/2022
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Set-CheckoutDevice.ps1 -file "Devices.csv" -deviceColumn "DeviceId" -userColumn "UserId"
@@ -60,17 +60,17 @@ if ($decision -eq 0) {
             $result = Send-Patch -endpoint $endpointURL -version $version2
             if ($result -ne "") {
               $err = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
-              Write-Warning ("Error Assigning DeviceName: $($item.$deviceColumn) : Error", $err.errorCode, $err.message)
-              Write-Log -logstring ("Error Assigning DeviceName: $($item.$deviceColumn) : Error", $err.errorCode, $err.message) -logfile $Logfile
+              Write-Warning ("Error Assigning Device ID: $($item.$deviceColumn) : Error", $err.errorCode, $err.message)
+              Write-Log -logstring ("Error Assigning Device ID: $($item.$deviceColumn) : Error", $err.errorCode, $err.message) -logfile $Logfile
             } else {
-                Write-Host "$($item.$deviceColumn) assigned to $($item.$userColumn) $result"
-                Write-Log -logstring "$($item.$deviceColumn) assigned to $($item.$userColumn) $result" -logfile $Logfile
+                Write-Host "Device ID: $($item.$deviceColumn) assigned to User ID: $($item.$userColumn) $result"
+                Write-Log -logstring "Device ID: $($item.$deviceColumn) assigned to User ID: $($item.$userColumn) $result" -logfile $Logfile
             }
         }
         catch {
           $err2 = ($Error[0].ErrorDetails.Message | ConvertFrom-Json)
-          Write-Warning "Error Assigning DeviceName: $($item.$deviceColumn) to $($item.$userColumn) $err2"
-          Write-Log -logstring "Error Assigning DeviceName: $($item.$deviceColumn) to $($item.$userColumn) $err2" -logfile $Logfile
+          Write-Warning "Error Assigning Device ID: $($item.$deviceColumn) to User ID: $($item.$userColumn) $err2"
+          Write-Log -logstring "Error Assigning Device ID: $($item.$deviceColumn) to User ID: $($item.$userColumn) $err2" -logfile $Logfile
         }
     }
 } else {
