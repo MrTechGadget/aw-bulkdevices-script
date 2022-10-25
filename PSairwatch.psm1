@@ -14,11 +14,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.12.1
+  Version:        2.12.2
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    10/08/2021
+  Update Date:    10/25/2022
 
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -628,12 +628,12 @@ Function Update-Devices {
                 $body = ConvertTo-Json -InputObject @{'SerialNumber' = $deviceid} -Compress
                 if ($r.Status -in 0, 1) {
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host "${devid}  install queued   ${webReturn2}"
+                    Write-Host "${devid} install queued ${webReturn2}"
                 } elseif ($r.Status -eq 3) {
-                    Write-Host "$($webReturn.DeviceId.Id.Value) profile already installed."
+                    Write-Host "$($devid) profile already installed."
                 } elseif ($r.Status -eq 6) {
                     $webReturn2 = Invoke-RestMethod -Method Post -Uri $endpointURL2 -Headers $headers -Body $body
-                    Write-Host "${devid}  Previous Error, install queued   ${webReturn2}"
+                    Write-Host "${devid} Previous Error, install queued ${webReturn2}"
                 }
             }
         }
