@@ -212,11 +212,14 @@ $list = Read-File $file $fileColumn
 $useJSON = "application/json"
 $headers = Set-Headers $restUserName $tenantAPIKey $useJSON $useJSON
 
+Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
+
 <# Get the tags, displays them to the user to select which tag to add. #>
 $TagList = Get-Tags
 $SelectedTag = Select-Tag $TagList
 $TagName = $TagList.keys | Where-Object {$TagList["$_"] -eq [string]$SelectedTag}
-Write-Host "Selected Tag: "$TagName
+Write-Host "Selected Tag: $($TagName)"
+Write-Log -logstring "Selected Tag: $($TagName)" -logfile $Logfile
 
 $action = Set-Action
 $SerialJSON = Set-AddTagJSON $list
@@ -230,4 +233,4 @@ Write-Host("Total Items: " +$results.TotalItems)
 Write-Host("Accepted Items: " + $results.AcceptedItems)
 Write-Host("Failed Items: " + $results.FailedItems)
 Write-Host("------------------------------")
-
+Write-Log -logstring "Results of ${action} Tags Call, Total Items: $($results.TotalItems), Accepted Items: $($results.AcceptedItems), Failed Items: $($results.FailedItems)" -logfile $Logfile
