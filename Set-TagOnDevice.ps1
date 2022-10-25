@@ -200,12 +200,12 @@ $Logfile = "$PSScriptRoot\TagActivity.log"
 Start of Script
 #>
 
-$serialList = Read-Serials
 $restUserName = Get-BasicUserForAuth
 $Config = Read-Config
 $tenantAPIKey = $Config.awtenantcode
 $organizationGroupID = $Config.groupid
 $airwatchServer = $Config.host
+$list = Read-File $file $fileColumn
 
 
 <# Build the headers and send the request to the server. #>
@@ -219,7 +219,7 @@ $TagName = $TagList.keys | Where-Object {$TagList["$_"] -eq [string]$SelectedTag
 Write-Host "Selected Tag: "$TagName
 
 $action = Set-Action
-$SerialJSON = Set-AddTagJSON $serialList
+$SerialJSON = Set-AddTagJSON $list
 $deviceIds = Get-DeviceIds $SerialJSON
 $addTagJSON = Set-AddTagJSON $deviceIds
 $results = Set-DeviceTags $SelectedTag $addTagJSON $action
