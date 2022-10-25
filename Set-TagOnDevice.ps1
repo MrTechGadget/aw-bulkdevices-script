@@ -1,41 +1,32 @@
 
-<# Add-TagToDevices Powershell Script Help
-
+<# Set-TagOnDevice Powershell Script Help
   .SYNOPSIS
     This Poweshell script adds a selected tag to a list of devices.
-    
   .DESCRIPTION
     This script will take an input of serial numbers from a CSV file, converts them to device IDs. 
     It queries a list of all Tags in the environment, the user selects the Tag to add the devices to and it adds the Tag in AirWatch for each of those devices.
-
-    This PowerShell script is PowerShell Core compliant and was written with Visual Studio Code on a Mac. It has been tested on Windows and Mac, but should also run on Linux.
-    Setup: 
-    This script takes an input of serial numbers from a CSV file. Sample Included. 
-    It also takes a config file, which houses the API Host, API key and Organization Group ID for your AirWatch environment. 
-    A sample file has been included, if you don't have one the script prompt fpr the values and will create it.
-
-    Information you will need to use this script:
-    userName - An AirWatch account in the tenant is being queried.  This user must have the API role at a minimum. Can be basic or directory user.
-    password - The password that is used by the user specified in the username parameter
-    tenantAPIKey - This is the REST API key that is generated in the AirWatch Console.  You locate this key at All Settings -> Advanced -> API -> REST, and you will find the key in the API Key field.  If it is not there you may need override the settings and Enable API Access
-    airwatchServer - This will be the fully qualified domain name of your AirWatch API server, without the https://.  All of the REST endpoints start with a forward slash (/) so do not include that either.
-    organizationGroupId - This will be the organization group Id in the AirWatch console. Not the group name, but the ID.
-
   .INPUTS
-    AirWatchConfig.json
-    Serials.csv
-
-  .EXAMPLE
-    BulkTagActionsToDevices.ps1 -Verbose
-
+    CSV File with headers
+  .OUTPUTS
+    NO OUTPUT CURRENTLY:Outputs a log of actions
   .NOTES
     Version:        1.4
     Author:         Joshua Clark @MrTechGadget
     Creation Date:  09/06/2017
     Update Date:    10/25/2022
     Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
-    
+  .EXAMPLE
+    .\Set-TagOnDevice.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
 #>
+
+[CmdletBinding()] 
+Param(
+   [Parameter(Mandatory=$True,HelpMessage="Path to file listing SerialNumbers.")]
+   [string]$file,
+	
+   [Parameter(HelpMessage="Name of Id column in file, default is SerialNumber")]
+   [string]$fileColumn = "SerialNumber"
+)
 
 <# Reads Serial Numbers from Serials.csv file and outputs array of serial numbers. #>
 Function Read-Serials {
