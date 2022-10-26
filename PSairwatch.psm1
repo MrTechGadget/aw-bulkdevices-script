@@ -14,7 +14,7 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.12.2
+  Version:        2.13.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
@@ -285,6 +285,29 @@ Function Get-DeviceDetails {
         Write-Warning "Error retrieving device details. May not be any devices matching."
     }
 
+}
+
+Function Get-DeviceIds {
+    Param([string]$body)
+
+    Write-Verbose("------------------------------")
+    Write-Verbose("List of Serial Numbers")
+    Write-Verbose $body
+    Write-Verbose("------------------------------")
+
+    $endpointURL = "https://${airwatchServer}/api/mdm/devices?searchby=Serialnumber"
+    $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $body
+
+    $deviceids = @()
+    foreach ($serial in $webReturn.Devices) {
+        $deviceids += $serial.Id.Value
+    }
+    Write-Verbose("------------------------------")
+    Write-Verbose("List of Device IDs")
+    Write-Verbose $deviceIds
+    Write-Verbose("------------------------------")
+
+    return $deviceids
 }
 
 Function Get-TaggedDevice {

@@ -102,29 +102,6 @@ Function Set-AddTagJSON {
     Return $addTagJSON
 }
 
-Function Get-DeviceIds {
-    Param([string]$addTagJSON)
-
-    Write-Verbose("------------------------------")
-    Write-Verbose("List of Serial Numbers")
-    Write-Verbose $addTagJSON
-    Write-Verbose("------------------------------")
-
-    $endpointURL = "https://${airwatchServer}/api/mdm/devices?searchby=Serialnumber"
-    $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addTagJSON
-
-    $deviceids = @()
-    foreach ($serial in $webReturn.Devices) {
-        $deviceids += $serial.Id.Value
-    }
-    Write-Verbose("------------------------------")
-    Write-Verbose("List of Device IDs")
-    #Write-Verbose $deviceIds
-    Write-Verbose("------------------------------")
-
-    return $deviceids
-}
-
 Function Set-Action {
     $options = [System.Management.Automation.Host.ChoiceDescription[]] @("&Add", "&Remove")
     [int]$defaultchoice = 0
