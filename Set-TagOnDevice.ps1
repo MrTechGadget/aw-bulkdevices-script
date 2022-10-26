@@ -39,22 +39,7 @@ Function Set-Action {
     }
 }
 
-Function Set-DeviceTags {
-    Param([string]$selectedtag,[string]$addTagJSON,[string]$verb)
 
-    $endpointURL = "https://${airwatchServer}/api/mdm/tags/${selectedtag}/${verb}devices"
-    $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $addTagJSON
-    
-    Write-Verbose("------------------------------")
-    Write-Verbose("Results of ${verb} Tags Call")
-    Write-Verbose("Total Items: " +$webReturn.TotalItems)
-    Write-Verbose("Accepted Items: " + $webReturn.AcceptedItems)
-    Write-Verbose("Failed Items: " + $webReturn.FailedItems)
-    Write-Verbose("------------------------------")
-
-    return $webReturn
-
-}
 
 Import-Module .\PSairwatch.psm1
 Write-Log -logstring "$($MyInvocation.Line)"
@@ -84,7 +69,7 @@ $action = Set-Action
 $SerialJSON = Set-AddTagJSON $list
 $deviceIds = Get-DeviceIds $SerialJSON
 $addTagJSON = Set-AddTagJSON $deviceIds
-$endpointURL = "mdm/tags/${selectedtag}/${action}devices"
+$endpointURL = "mdm/tags/${SelectedTag}/${action}devices"
 $results = Send-Post $endpointURL $addTagJSON
 
 Write-Host("------------------------------")
