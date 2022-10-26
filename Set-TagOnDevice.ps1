@@ -225,7 +225,9 @@ $action = Set-Action
 $SerialJSON = Set-AddTagJSON $list
 $deviceIds = Get-DeviceIds $SerialJSON
 $addTagJSON = Set-AddTagJSON $deviceIds
-$results = Set-DeviceTags $SelectedTag $addTagJSON $action
+#$results = Set-DeviceTags $SelectedTag $addTagJSON $action
+$endpointURL = "mdm/tags/${selectedtag}/${action}devices"
+$results = Send-Post $endpointURL $addTagJSON
 
 Write-Host("------------------------------")
 Write-Host("Results of ${action} Tags Call")
