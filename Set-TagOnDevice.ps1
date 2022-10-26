@@ -28,80 +28,6 @@ Param(
    [string]$fileColumn = "SerialNumber"
 )
 
-<# Reads Serial Numbers from Serials.csv file and outputs array of serial numbers. #>
-Function Read-Serials {
-    if (Test-Path "Serials.csv") {
-        Write-Verbose "Serials.csv exists, importing list."
-        $data = Import-Csv -Path Serials.csv
-        $s = @()
-        foreach ($device in $data) {
-            $s += $device.SerialNumber
-            Write-Verbose $device.SerialNumber
-        }
-        return $s
-    } else {
-        Write-Verbose "Serials.csv does not exist."
-        Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-        Write-Host "      No Serials.csv file exists, please place file in same directory as script.      " -ForegroundColor Black -BackgroundColor Red
-        Write-Host "--------------------------------------------------------------------------------------" -ForegroundColor Black -BackgroundColor Red
-    }
-    
-}
-
-Function Set-Headers {
-
-    Param([string]$authoriztionString, [string]$tenantCode, [string]$acceptType, [string]$contentType)
-
-    $authString = $authoriztionString
-    $tcode = $tenantCode
-    $accept = $acceptType
-    $content = $contentType
-
-    Write-Verbose("---------- Headers ----------")
-    Write-Verbose("Authorization: " + $authString)
-    Write-Verbose("aw-tenant-code:" + $tcode)
-    Write-Verbose("Accept: " + $accept)
-    Write-Verbose("Content-Type: " + $content)
-    Write-Verbose("------------------------------")
-    Write-Verbose("")
-    $header = @{"Authorization" = $authString; "aw-tenant-code" = $tcode; "Accept" = $useJSON; "Content-Type" = $useJSON}
-     
-    Return $header
-}
-
-<#  This function builds the JSON to add the tag to all of the devices. #>
-Function Set-AddTagJSON {
-
-    Param([Array]$deviceList)
-
-    Write-Verbose("------------------------------")
-    Write-Verbose("Building JSON to Post")
-
-    $arrayLength = $deviceList.Count
-    $counter = 0
-    $quoteCharacter = [char]34
-    
-    $addTagJSON = "{ " + $quoteCharacter + "BulkValues" + $quoteCharacter + " : { " + $quoteCharacter + "Value" + $quoteCharacter + " : [ "
-    foreach ($currentDeviceID in $deviceList) {
-        $deviceIDString = Out-String -InputObject $currentDeviceID
-        $deviceIDString = $deviceIDString.Trim()
-
-        $counter = $counter + 1
-        if ($counter -lt $arrayLength) {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $deviceIDString + $quoteCharacter + ", "
-        } else {
-            $addTagJSON = $addTagJSON + $quoteCharacter + $deviceIDString + $quoteCharacter
-        }
-    }
-    $addTagJSON = $addTagJSON + " ] } }"
-
-    Write-Verbose($addTagJSON)
-    Write-Verbose("------------------------------")
-    Write-Verbose("")
-    
-    Return $addTagJSON
-}
-
 Function Set-Action {
     $options = [System.Management.Automation.Host.ChoiceDescription[]] @("&Add", "&Remove")
     [int]$defaultchoice = 0
@@ -139,17 +65,11 @@ $Logfile = "$PSScriptRoot\TagActivity.log"
 Start of Script
 #>
 
-$restUserName = Get-BasicUserForAuth
 $Config = Read-Config
 $tenantAPIKey = $Config.awtenantcode
 $organizationGroupID = $Config.groupid
 $airwatchServer = $Config.host
 $list = Read-File $file $fileColumn
-
-
-<# Build the headers and send the request to the server. #>
-$useJSON = "application/json"
-$headers = Set-Headers $restUserName $tenantAPIKey $useJSON $useJSON
 
 Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 
@@ -164,7 +84,6 @@ $action = Set-Action
 $SerialJSON = Set-AddTagJSON $list
 $deviceIds = Get-DeviceIds $SerialJSON
 $addTagJSON = Set-AddTagJSON $deviceIds
-#$results = Set-DeviceTags $SelectedTag $addTagJSON $action
 $endpointURL = "mdm/tags/${selectedtag}/${action}devices"
 $results = Send-Post $endpointURL $addTagJSON
 

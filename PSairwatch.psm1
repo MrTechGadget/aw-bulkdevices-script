@@ -295,6 +295,7 @@ Function Get-DeviceIds {
     Write-Verbose $body
     Write-Verbose("------------------------------")
 
+    $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
     $endpointURL = "https://${airwatchServer}/api/mdm/devices?searchby=Serialnumber"
     $webReturn = Invoke-RestMethod -Method Post -Uri $endpointURL -Headers $headers -Body $body
 
@@ -304,7 +305,7 @@ Function Get-DeviceIds {
     }
     Write-Verbose("------------------------------")
     Write-Verbose("List of Device IDs")
-    Write-Verbose $deviceIds
+    Write-Verbose "$($deviceIds)"
     Write-Verbose("------------------------------")
 
     return $deviceids
