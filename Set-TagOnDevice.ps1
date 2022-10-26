@@ -102,44 +102,6 @@ Function Set-AddTagJSON {
     Return $addTagJSON
 }
 
-Function Get-Tags {
-    $endpointURL = "https://${airwatchServer}/api/mdm/tags/search?organizationgroupid=${organizationGroupID}"
-    $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
-    $TagArray = New-Object System.Collections.Specialized.OrderedDictionary
-    foreach ($tag in $webReturn.Tags) {
-        $TagArray.Add($tag.TagName, $tag.Id.Value)
-    }
-    return $TagArray 
-}
-
-Function Select-Tag {
-    Param([object]$TagList)
-
-    $selection = $null
-    
-    Do
-    {
-        $mhead
-        Write-Host # empty line
-        $TagArr = @()
-        $i=0
-        foreach($tag in $TagList.keys)
-        {
-            Write-Host -ForegroundColor Cyan "  $($i+1)." $tag
-            $TagArr += $tag
-            $i++
-        }
-        Write-Host # empty line
-        $ans = (Read-Host 'Please enter selection') -as [int]
-    
-    } While ((-not $ans) -or (0 -gt $ans) -or ($TagList.Count -lt $ans))
-    
-    $selection = $ans-1
-    $selectedTag = $TagArr[$selection]
-    $TagNum = [string]$TagList.$selectedTag
-    return $TagNum
-}
-
 Function Get-DeviceIds {
     Param([string]$addTagJSON)
 
