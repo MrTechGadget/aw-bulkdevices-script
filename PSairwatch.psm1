@@ -176,7 +176,7 @@ Function Get-Tags {
 Function Get-Profiles {
     Param([string]$GroupID, [string]$platform)
     $headers = Set-Header $restUserName $tenantAPIKey "application/json" "application/json"
-    $endpointURL = "https://${airwatchServer}/api/mdm/profiles/search?organizationgroupid=${GroupID}"
+    $endpointURL = "https://${airwatchServer}/api/mdm/profiles/search?organizationgroupid=${GroupID}&platform=${platform}&pagesize=1000"
     $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
     $Array = New-Object System.Collections.Specialized.OrderedDictionary
     foreach ($profile in $webReturn.Profiles) {
