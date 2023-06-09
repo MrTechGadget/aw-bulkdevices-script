@@ -14,11 +14,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.13.0
+  Version:        2.13.1
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    10/25/2022
+  Update Date:    06/09/2023
 
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -641,7 +641,8 @@ Function Update-Devices {
     Param([array]$devices, $ProfileSelected)
     $body = ""
     $endpointURL2 = "https://${airwatchServer}/api/mdm/profiles/${ProfileSelected}/install"
-
+    $headers = Set-Header $restUserName $tenantAPIKey $version1 "application/json"
+    
     foreach ($deviceid in $devices) {
         $endpointURL = "https://${airwatchServer}/api/mdm/devices/profiles?searchBy=Serialnumber&id=${deviceid}"
         try {
