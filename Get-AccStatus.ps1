@@ -14,7 +14,7 @@
   Update Date:    10/14/2023
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
-  .\Get-DeviceDetails.ps1 -file "Devices.csv" -fileColumn "SerialNumber"
+  .\Get-AccStatus.ps1
 #>
 
 Import-Module .\PSairwatch.psm1
