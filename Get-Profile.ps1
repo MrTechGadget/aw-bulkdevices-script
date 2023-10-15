@@ -12,10 +12,10 @@
 .OUTPUTS
   Outputs a CSV: "Profiles[today's date].csv"
 .NOTES
-  Version:        1.3
+  Version:        1.4
   Author:         Joshua Clark @MrTechGadget
   Creation Date:  01/09/2021
-  Update Date:    10/13/2022
+  Update Date:    10/14/2023
   Site:           https://github.com/MrTechGadget/aw-bulkdevices-script
 .EXAMPLE
   .\Get-Profile.ps1 -query "status=Active&platform=Apple"
@@ -37,15 +37,17 @@ Write-Log -logstring "$($MyInvocation.Line)" -logfile $Logfile
 Write-Log -logstring "Getting Profiles in AirWatch" -logfile $Logfile
 $date = Get-Date -Format yyyyMMdd
 if ($query) {
-  $endpointURL = "mdm/profiles/search?$query"
+  $endpointURL = "mdm/profiles/search?$query&PageSize=500"
 } else {
   $endpointURL = "mdm/profiles/search"
 }
 $results = Send-Get -endpoint $endpointURL -version "application/json;version=2"
 
 try {
-  if ($results) {
+  if ($results.ProfileList) {
     Write-Log -logstring "$($results.ProfileList.Length) Profiles returned out of $($results.TotalResults) total, writing csv." -logfile $Logfile
+    Write-Host "$($results.ProfileList.Length) Profiles returned out of $($results.TotalResults) total, writing csv."
+    $results.ProfileList | Export-Csv -Path "Profiles${query}.csv"
   } else {
     Write-Log -logstring "No Results" -logfile $Logfile
   }
