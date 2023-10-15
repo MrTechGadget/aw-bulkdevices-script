@@ -14,11 +14,11 @@
 .OUTPUTS
   None
 .NOTES
-  Version:        2.13.1
+  Version:        2.14.0
   Author:         Joshua Clark @MrTechGadget
   Source:         https://github.com/MrTechGadget/aw-bulkdevices-script
   Creation Date:  05/22/2018
-  Update Date:    06/09/2023
+  Update Date:    10/14/2023
 
 .EXAMPLE
     $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -195,6 +195,17 @@ Function Get-OrgGroups {
     $OrgArray = New-Object System.Collections.Specialized.OrderedDictionary
     foreach ($org in $webReturn.LocationGroups) {
         $OrgArray.Add($org.Name, $org.Id.Value)
+    }
+    return $OrgArray
+}
+
+Function Get-OrgGroupUUID {
+    $headers = Set-Header $restUserName $tenantAPIKey $version2 "application/json"
+    $endpointURL = "https://${airwatchServer}/api/system/groups/search?orderby=name"
+    $webReturn = Invoke-RestMethod -Method Get -Uri $endpointURL -Headers $headers
+    $OrgArray = New-Object System.Collections.Specialized.OrderedDictionary
+    foreach ($org in $webReturn.OrganizationGroups) {
+        $OrgArray.Add($org.Name, $org.Uuid)
     }
     return $OrgArray
 }
